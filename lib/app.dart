@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'screens/inbox/inbox_screen.dart';
+import 'screens/scheduled/scheduled_screen.dart';
 import 'screens/shell/app_shell.dart';
 import 'theme/app_theme.dart';
 
@@ -15,6 +16,10 @@ final GoRouter _router = GoRouter(
         GoRoute(
           path: '/inbox',
           builder: (context, state) => const InboxScreen(),
+        ),
+        GoRoute(
+          path: '/scheduled',
+          builder: (context, state) => const ScheduledScreen(),
         ),
         GoRoute(
           path: '/search',
