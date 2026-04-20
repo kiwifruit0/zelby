@@ -4,6 +4,7 @@ import 'package:drift_flutter/drift_flutter.dart';
 import 'daos/deadlines_dao.dart';
 import 'daos/events_dao.dart';
 import 'daos/inbox_dao.dart';
+import 'daos/projects_dao.dart';
 import 'daos/scheduled_tasks_dao.dart';
 import 'tables/dependencies.dart';
 import 'tables/item_dates.dart';
@@ -14,7 +15,7 @@ part 'database.g.dart';
 
 @DriftDatabase(
   tables: [Items, ItemDates, ProjectItems, TaskDependencies],
-  daos: [InboxDao, ScheduledTasksDao, EventsDao, DeadlinesDao],
+  daos: [InboxDao, ScheduledTasksDao, EventsDao, DeadlinesDao, ProjectsDao],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase._internal() : super(_openConnection());
