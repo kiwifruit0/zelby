@@ -20,21 +20,58 @@ It is offline-first; sync will be bolted on later and should not influence curre
 
 ## Project Structure
 lib/
-main.dart
-app.dart                  # Root widget, Riverpod scope, go_router config
-database/
-database.dart           # Drift AppDatabase class
-tables/                 # One file per table definition
-daos/                   # One file per DAO
-providers/                # Riverpod providers, one file per domain
-models/                   # Any non-Drift data models or enums
-screens/                  # One folder per screen
-inbox/
-calendar/
-projects/
-search/
-widgets/                  # Shared/reusable widgets
-theme/                    # Colours, typography, spacing constants
+├── main.dart
+├── app.dart                      # Root widget, ProviderScope, go_router config
+├── database/
+│   ├── database.dart             # Drift AppDatabase class
+│   ├── tables/
+│   │   ├── items.dart
+│   │   ├── item_dates.dart
+│   │   ├── projects.dart         # project_items join table
+│   │   └── dependencies.dart     # task_dependencies join table
+│   └── daos/
+│       ├── inbox_dao.dart
+│       ├── scheduled_tasks_dao.dart
+│       ├── events_dao.dart
+│       ├── deadlines_dao.dart
+│       └── projects_dao.dart
+├── providers/
+│   ├── database_provider.dart
+│   ├── inbox_provider.dart
+│   ├── scheduled_tasks_provider.dart
+│   ├── events_provider.dart
+│   ├── deadlines_provider.dart
+│   ├── projects_provider.dart
+│   └── selected_date_provider.dart
+├── models/                       # Non-Drift data models and enums
+├── screens/
+│   ├── shell/
+│   │   └── app_shell.dart
+│   ├── inbox/
+│   │   └── inbox_screen.dart
+│   ├── scheduled/
+│   │   └── scheduled_screen.dart
+│   ├── events/
+│   │   └── events_screen.dart
+│   ├── deadlines/
+│   │   └── deadlines_screen.dart
+│   ├── projects/
+│   │   ├── projects_screen.dart
+│   │   └── project_detail_screen.dart
+│   └── calendar/
+│       ├── monthly_calendar_screen.dart
+│       ├── weekly_calendar_screen.dart
+│       └── daily_calendar_screen.dart
+├── widgets/
+│   ├── sidebar/
+│   │   └── app_sidebar.dart
+│   └── shared/                   # Reusable widgets (task rows, capture bar, etc.)
+├── services/
+│   ├── notification_service.dart
+│   ├── notification_scheduler.dart
+│   └── recurrence_service.dart
+└── theme/
+    └── app_theme.dart
 
 ## Object Types
 
