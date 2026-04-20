@@ -187,9 +187,8 @@ Text: #202020 primary, #888888 muted
 - All files use snake_case naming
 
 ## Current Build Stage
-[UPDATE THIS SECTION as you progress]
-- [ ] Drift schema defined
-- [ ] DAOs created
+- [x] Drift schema defined
+- [x] DAOs created
 - [ ] Riverpod providers wired up
 - [ ] App shell and navigation
 - [ ] Inbox screen
@@ -201,4 +200,3 @@ Text: #202020 primary, #888888 muted
 - [ ] Keyboard shortcuts
 - [ ] Notifications
 - [ ] Recurrence logic
-
