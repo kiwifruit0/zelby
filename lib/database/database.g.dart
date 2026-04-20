@@ -1364,6 +1364,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $TaskDependenciesTable taskDependencies = $TaskDependenciesTable(
     this,
   );
+  late final InboxDao inboxDao = InboxDao(this as AppDatabase);
+  late final ScheduledTasksDao scheduledTasksDao = ScheduledTasksDao(
+    this as AppDatabase,
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
