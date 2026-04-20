@@ -2,42 +2,56 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'screens/shell/app_shell.dart';
 import 'theme/app_theme.dart';
 
 final GoRouter _router = GoRouter(
+  initialLocation: '/inbox',
   routes: [
-    GoRoute(path: '/', redirect: (context, state) => '/inbox'),
-    GoRoute(
-      path: '/inbox',
-      builder: (context, state) => const _RoutePage(title: 'Inbox'),
-    ),
-    GoRoute(
-      path: '/search',
-      builder: (context, state) => const _RoutePage(title: 'Search'),
-    ),
-    GoRoute(path: '/calendar', redirect: (context, state) => '/calendar/daily'),
-    GoRoute(
-      path: '/calendar/daily',
-      builder: (context, state) => const _RoutePage(title: 'Calendar Daily'),
-    ),
-    GoRoute(
-      path: '/calendar/weekly',
-      builder: (context, state) => const _RoutePage(title: 'Calendar Weekly'),
-    ),
-    GoRoute(
-      path: '/calendar/monthly',
-      builder: (context, state) => const _RoutePage(title: 'Calendar Monthly'),
-    ),
-    GoRoute(
-      path: '/projects',
-      builder: (context, state) => const _RoutePage(title: 'Projects'),
-    ),
-    GoRoute(
-      path: '/projects/:id',
-      builder: (context, state) {
-        final projectId = state.pathParameters['id'] ?? '';
-        return _RoutePage(title: 'Project $projectId');
-      },
+    ShellRoute(
+      builder: (context, state, child) => AppShell(child: child),
+      routes: [
+        GoRoute(
+          path: '/inbox',
+          builder: (context, state) => const _PlaceholderPage(title: 'Inbox'),
+        ),
+        GoRoute(
+          path: '/search',
+          builder: (context, state) =>
+              const _PlaceholderPage(title: 'Search'),
+        ),
+        GoRoute(
+          path: '/calendar',
+          redirect: (context, state) => '/calendar/daily',
+        ),
+        GoRoute(
+          path: '/calendar/daily',
+          builder: (context, state) =>
+              const _PlaceholderPage(title: 'Daily'),
+        ),
+        GoRoute(
+          path: '/calendar/weekly',
+          builder: (context, state) =>
+              const _PlaceholderPage(title: 'Weekly'),
+        ),
+        GoRoute(
+          path: '/calendar/monthly',
+          builder: (context, state) =>
+              const _PlaceholderPage(title: 'Monthly'),
+        ),
+        GoRoute(
+          path: '/projects',
+          builder: (context, state) =>
+              const _PlaceholderPage(title: 'Projects'),
+        ),
+        GoRoute(
+          path: '/projects/:id',
+          builder: (context, state) {
+            final id = state.pathParameters['id'] ?? '';
+            return _PlaceholderPage(title: 'Project $id');
+          },
+        ),
+      ],
     ),
   ],
 );
@@ -57,16 +71,15 @@ class ZelbyApp extends StatelessWidget {
   }
 }
 
-class _RoutePage extends StatelessWidget {
-  const _RoutePage({required this.title});
+class _PlaceholderPage extends StatelessWidget {
+  const _PlaceholderPage({required this.title});
 
   final String title;
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(title)),
-      body: Center(child: Text(title)),
+    return Center(
+      child: Text(title, style: AppTextStyles.bodyMuted),
     );
   }
 }

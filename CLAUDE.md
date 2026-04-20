@@ -190,7 +190,7 @@ Text: #202020 primary, #888888 muted
 - [x] Drift schema defined
 - [x] DAOs created
 - [x] Riverpod providers wired up
-- [ ] App shell and navigation
+- [x] App shell and navigation
 - [ ] Inbox screen
 - [ ] Scheduled tasks screen
 - [ ] Events screen
