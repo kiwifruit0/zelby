@@ -189,7 +189,7 @@ Text: #202020 primary, #888888 muted
 ## Current Build Stage
 - [x] Drift schema defined
 - [x] DAOs created
-- [ ] Riverpod providers wired up
+- [x] Riverpod providers wired up
 - [ ] App shell and navigation
 - [ ] Inbox screen
 - [ ] Scheduled tasks screen
