@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import 'screens/deadlines/deadlines_screen.dart';
 import 'screens/events/events_screen.dart';
 import 'screens/inbox/inbox_screen.dart';
+import 'screens/projects/project_detail_screen.dart';
+import 'screens/projects/projects_screen.dart';
 import 'screens/scheduled/scheduled_screen.dart';
 import 'screens/shell/app_shell.dart';
 import 'theme/app_theme.dart';
@@ -57,14 +59,14 @@ final GoRouter _router = GoRouter(
         ),
         GoRoute(
           path: '/projects',
-          builder: (context, state) =>
-              const _PlaceholderPage(title: 'Projects'),
+          builder: (context, state) => const ProjectsScreen(),
         ),
         GoRoute(
           path: '/projects/:id',
           builder: (context, state) {
-            final id = state.pathParameters['id'] ?? '';
-            return _PlaceholderPage(title: 'Project $id');
+            final id =
+                int.tryParse(state.pathParameters['id'] ?? '') ?? 0;
+            return ProjectDetailScreen(projectId: id);
           },
         ),
       ],
