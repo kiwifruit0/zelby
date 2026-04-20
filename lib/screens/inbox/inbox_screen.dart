@@ -115,8 +115,7 @@ class _TaskRowState extends State<_TaskRow> {
     return MouseRegion(
       onEnter: (_) => setState(() => _hovered = true),
       onExit: (_) => setState(() => _hovered = false),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 80),
+      child: Container(
         color: _hovered ? AppColors.hoverBackground : AppColors.background,
         padding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.md,
@@ -177,6 +176,7 @@ class _CaptureRow extends StatefulWidget {
 
 class _CaptureRowState extends State<_CaptureRow> {
   bool _expanded = false;
+  bool _addTaskHovered = false;
   final _controller = TextEditingController();
   final _focusNode = FocusNode();
 
@@ -211,7 +211,13 @@ class _CaptureRowState extends State<_CaptureRow> {
   @override
   Widget build(BuildContext context) {
     if (!_expanded) {
-      return _AddTaskPrompt(onTap: _expand);
+      return _AddTaskPrompt(
+        isHovered: _addTaskHovered,
+        onHoverChanged: (hovered) {
+          setState(() => _addTaskHovered = hovered);
+        },
+        onTap: _expand,
+      );
     }
 
     return Padding(
@@ -274,29 +280,28 @@ class _CaptureRowState extends State<_CaptureRow> {
   }
 }
 
-class _AddTaskPrompt extends StatefulWidget {
-  const _AddTaskPrompt({required this.onTap});
+class _AddTaskPrompt extends StatelessWidget {
+  const _AddTaskPrompt({
+    required this.isHovered,
+    required this.onHoverChanged,
+    required this.onTap,
+  });
 
+  final bool isHovered;
+  final ValueChanged<bool> onHoverChanged;
   final VoidCallback onTap;
-
-  @override
-  State<_AddTaskPrompt> createState() => _AddTaskPromptState();
-}
-
-class _AddTaskPromptState extends State<_AddTaskPrompt> {
-  bool _hovered = false;
 
   @override
   Widget build(BuildContext context) {
     return MouseRegion(
       cursor: SystemMouseCursors.click,
-      onEnter: (_) => setState(() => _hovered = true),
-      onExit: (_) => setState(() => _hovered = false),
+      onEnter: (_) => onHoverChanged(true),
+      onExit: (_) => onHoverChanged(false),
       child: GestureDetector(
-        onTap: widget.onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 80),
-          color: _hovered ? AppColors.hoverBackground : Colors.transparent,
+        behavior: HitTestBehavior.opaque,
+        onTap: onTap,
+        child: Container(
+          color: isHovered ? AppColors.hoverBackground : Colors.transparent,
           padding: const EdgeInsets.symmetric(
             horizontal: AppSpacing.md,
             vertical: AppSpacing.sm,

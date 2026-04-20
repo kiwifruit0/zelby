@@ -151,6 +151,13 @@ Accent colour: #D5CFF2
 Background: #FAFAFA sidebar, #FFFFFF main content
 Text: #202020 primary, #888888 muted
 
+## Hover Interaction Stability
+- For groups of related interactive rows (sidebar nav, menu lists), keep a **single parent-owned hover key** (e.g. route/id) so only one row is hovered at a time.
+- Avoid per-row hover animations for background color transitions (`AnimatedContainer` for hover fill). Use immediate color changes to prevent multi-row overlap flashes.
+- Use one `MouseRegion` per interactive row and clear hover state on `onExit` only if that row is still the active hovered key.
+- Use `GestureDetector(behavior: HitTestBehavior.opaque, ...)` so hover/click hit areas are stable and do not jump between nested children.
+- Keep hover colors explicit in the widget (not stacked with additional transient overlays) to avoid temporary darkening.
+
 ## Keyboard Shortcuts (desktop)
 - `n` — new task (captures to inbox)
 - `/` — focus search
