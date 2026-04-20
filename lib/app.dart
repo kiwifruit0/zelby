@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'screens/inbox/inbox_screen.dart';
 import 'screens/shell/app_shell.dart';
 import 'theme/app_theme.dart';
 
@@ -13,7 +14,7 @@ final GoRouter _router = GoRouter(
       routes: [
         GoRoute(
           path: '/inbox',
-          builder: (context, state) => const _PlaceholderPage(title: 'Inbox'),
+          builder: (context, state) => const InboxScreen(),
         ),
         GoRoute(
           path: '/search',
