@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'screens/calendar/monthly_calendar_screen.dart';
 import 'screens/deadlines/deadlines_screen.dart';
 import 'screens/events/events_screen.dart';
 import 'screens/inbox/inbox_screen.dart';
@@ -15,28 +16,35 @@ final GoRouter _router = GoRouter(
   initialLocation: '/inbox',
   routes: [
     ShellRoute(
-      builder: (context, state, child) => AppShell(child: child),
+      pageBuilder: (context, state, child) =>
+          _noTransitionPage(state, AppShell(child: child)),
       routes: [
         GoRoute(
           path: '/inbox',
-          builder: (context, state) => const InboxScreen(),
+          pageBuilder: (context, state) =>
+              _noTransitionPage(state, const InboxScreen()),
         ),
         GoRoute(
           path: '/scheduled',
-          builder: (context, state) => const ScheduledScreen(),
+          pageBuilder: (context, state) =>
+              _noTransitionPage(state, const ScheduledScreen()),
         ),
         GoRoute(
           path: '/events',
-          builder: (context, state) => const EventsScreen(),
+          pageBuilder: (context, state) =>
+              _noTransitionPage(state, const EventsScreen()),
         ),
         GoRoute(
           path: '/deadlines',
-          builder: (context, state) => const DeadlinesScreen(),
+          pageBuilder: (context, state) =>
+              _noTransitionPage(state, const DeadlinesScreen()),
         ),
         GoRoute(
           path: '/search',
-          builder: (context, state) =>
-              const _PlaceholderPage(title: 'Search'),
+          pageBuilder: (context, state) => _noTransitionPage(
+            state,
+            const _PlaceholderPage(title: 'Search'),
+          ),
         ),
         GoRoute(
           path: '/calendar',
@@ -44,35 +52,49 @@ final GoRouter _router = GoRouter(
         ),
         GoRoute(
           path: '/calendar/daily',
-          builder: (context, state) =>
-              const _PlaceholderPage(title: 'Daily'),
+          pageBuilder: (context, state) => _noTransitionPage(
+            state,
+            const _PlaceholderPage(title: 'Daily'),
+          ),
         ),
         GoRoute(
           path: '/calendar/weekly',
-          builder: (context, state) =>
-              const _PlaceholderPage(title: 'Weekly'),
+          pageBuilder: (context, state) => _noTransitionPage(
+            state,
+            const _PlaceholderPage(title: 'Weekly'),
+          ),
         ),
         GoRoute(
           path: '/calendar/monthly',
-          builder: (context, state) =>
-              const _PlaceholderPage(title: 'Monthly'),
+          pageBuilder: (context, state) => _noTransitionPage(
+            state,
+            const MonthlyCalendarScreen(),
+          ),
         ),
         GoRoute(
           path: '/projects',
-          builder: (context, state) => const ProjectsScreen(),
+          pageBuilder: (context, state) =>
+              _noTransitionPage(state, const ProjectsScreen()),
         ),
         GoRoute(
           path: '/projects/:id',
-          builder: (context, state) {
+          pageBuilder: (context, state) {
             final id =
                 int.tryParse(state.pathParameters['id'] ?? '') ?? 0;
-            return ProjectDetailScreen(projectId: id);
+            return _noTransitionPage(state, ProjectDetailScreen(projectId: id));
           },
         ),
       ],
     ),
   ],
 );
+
+Page<void> _noTransitionPage(GoRouterState state, Widget child) {
+  return NoTransitionPage<void>(
+    key: state.pageKey,
+    child: child,
+  );
+}
 
 class ZelbyApp extends StatelessWidget {
   const ZelbyApp({super.key});

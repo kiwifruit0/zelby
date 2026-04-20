@@ -46,6 +46,31 @@ class ScheduledTasksDao extends DatabaseAccessor<AppDatabase>
         );
   }
 
+  Stream<List<ScheduledTaskWithDate>> watchTasksForDateRange(
+    DateTime start,
+    DateTime end,
+  ) {
+    final query = select(items).join([
+      innerJoin(itemDates, itemDates.itemId.equalsExp(items.id)),
+    ])
+      ..where(items.itemType.equals('scheduled_task'))
+      ..where(items.deletedAt.isNull())
+      ..where(items.completed.equals(false))
+      ..where(itemDates.endDate.isBiggerOrEqualValue(start))
+      ..where(itemDates.endDate.isSmallerThanValue(end));
+
+    return query.watch().map(
+          (rows) => rows
+              .map(
+                (row) => ScheduledTaskWithDate(
+                  item: row.readTable(items),
+                  itemDate: row.readTable(itemDates),
+                ),
+              )
+              .toList(),
+        );
+  }
+
   Future<int> insertScheduledTask(String title, DateTime date, {String? notes}) {
     final now = DateTime.now();
 

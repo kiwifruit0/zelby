@@ -27,6 +27,18 @@ class ScheduledTaskWithDate {
 }
 
 @riverpod
+Stream<List<ScheduledTaskWithDate>> scheduledTasksForDateRange(
+  Ref ref,
+  DateTime start,
+  DateTime end,
+) {
+  final scheduledTasksDao = ref.watch(appDatabaseProvider).scheduledTasksDao;
+  return scheduledTasksDao.watchTasksForDateRange(start, end).map(
+        (rows) => rows.map(ScheduledTaskWithDate.fromDao).toList(),
+      );
+}
+
+@riverpod
 Stream<List<ScheduledTaskWithDate>> scheduledTasksForDate(Ref ref, DateTime date) {
   final scheduledTasksDao = ref.watch(appDatabaseProvider).scheduledTasksDao;
   return scheduledTasksDao.watchTasksForDate(date).map(
