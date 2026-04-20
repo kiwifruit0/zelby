@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'screens/deadlines/deadlines_screen.dart';
 import 'screens/events/events_screen.dart';
 import 'screens/inbox/inbox_screen.dart';
 import 'screens/scheduled/scheduled_screen.dart';
@@ -25,6 +26,10 @@ final GoRouter _router = GoRouter(
         GoRoute(
           path: '/events',
           builder: (context, state) => const EventsScreen(),
+        ),
+        GoRoute(
+          path: '/deadlines',
+          builder: (context, state) => const DeadlinesScreen(),
         ),
         GoRoute(
           path: '/search',
