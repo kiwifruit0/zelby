@@ -8,6 +8,7 @@ import '../../providers/events_provider.dart';
 import '../../providers/scheduled_tasks_provider.dart';
 import '../../providers/selected_date_provider.dart';
 import '../../theme/app_theme.dart';
+import 'calendar_view_switcher.dart';
 
 // Per-type dot colours shown in the calendar marker row.
 const _kTaskColor = AppColors.accent;
@@ -22,8 +23,7 @@ class MonthlyCalendarScreen extends ConsumerStatefulWidget {
       _MonthlyCalendarScreenState();
 }
 
-class _MonthlyCalendarScreenState
-    extends ConsumerState<MonthlyCalendarScreen> {
+class _MonthlyCalendarScreenState extends ConsumerState<MonthlyCalendarScreen> {
   late DateTime _focusedDay;
 
   @override
@@ -33,8 +33,7 @@ class _MonthlyCalendarScreenState
   }
 
   // Exclusive upper bound so the range query uses [start, end).
-  DateTime get _rangeStart =>
-      DateTime(_focusedDay.year, _focusedDay.month, 1);
+  DateTime get _rangeStart => DateTime(_focusedDay.year, _focusedDay.month, 1);
   DateTime get _rangeEnd =>
       DateTime(_focusedDay.year, _focusedDay.month + 1, 1);
 
@@ -51,13 +50,8 @@ class _MonthlyCalendarScreenState
     // Events span multiple days — mark every day in range.
     for (final e in events) {
       if (e.startDate == null || e.endDate == null) continue;
-      var d = DateTime(
-        e.startDate!.year,
-        e.startDate!.month,
-        e.startDate!.day,
-      );
-      final last =
-          DateTime(e.endDate!.year, e.endDate!.month, e.endDate!.day);
+      var d = DateTime(e.startDate!.year, e.startDate!.month, e.startDate!.day);
+      final last = DateTime(e.endDate!.year, e.endDate!.month, e.endDate!.day);
       while (!d.isAfter(last)) {
         add(d, 'event');
         d = d.add(const Duration(days: 1));
@@ -82,14 +76,12 @@ class _MonthlyCalendarScreenState
   }
 
   void _prevMonth() => setState(
-        () => _focusedDay =
-            DateTime(_focusedDay.year, _focusedDay.month - 1, 1),
-      );
+    () => _focusedDay = DateTime(_focusedDay.year, _focusedDay.month - 1, 1),
+  );
 
   void _nextMonth() => setState(
-        () => _focusedDay =
-            DateTime(_focusedDay.year, _focusedDay.month + 1, 1),
-      );
+    () => _focusedDay = DateTime(_focusedDay.year, _focusedDay.month + 1, 1),
+  );
 
   void _onDaySelected(DateTime selected, DateTime focused) {
     ref.read(selectedDateProvider.notifier).state = selected;
@@ -101,8 +93,9 @@ class _MonthlyCalendarScreenState
   Widget build(BuildContext context) {
     final selectedDay = ref.watch(selectedDateProvider);
 
-    final eventsAsync =
-        ref.watch(eventsForDateRangeProvider(_rangeStart, _rangeEnd));
+    final eventsAsync = ref.watch(
+      eventsForDateRangeProvider(_rangeStart, _rangeEnd),
+    );
     final tasksAsync = ref.watch(
       scheduledTasksForDateRangeProvider(_rangeStart, _rangeEnd),
     );
@@ -130,8 +123,7 @@ class _MonthlyCalendarScreenState
             focusedDay: _focusedDay,
             selectedDayPredicate: (day) => isSameDay(day, selectedDay),
             onDaySelected: _onDaySelected,
-            onPageChanged: (focused) =>
-                setState(() => _focusedDay = focused),
+            onPageChanged: (focused) => setState(() => _focusedDay = focused),
             headerVisible: false,
             rowHeight: 52,
             daysOfWeekHeight: 28,
@@ -207,8 +199,7 @@ class _MonthlyCalendarScreenState
                     children: [
                       if (types.contains('scheduled_task'))
                         _Dot(color: _kTaskColor),
-                      if (types.contains('event'))
-                        _Dot(color: _kEventColor),
+                      if (types.contains('event')) _Dot(color: _kEventColor),
                       if (types.contains('deadline'))
                         _Dot(color: _kDeadlineColor),
                     ],
@@ -226,8 +217,18 @@ class _MonthlyCalendarScreenState
 // ── Month header ──────────────────────────────────────────────────────────────
 
 const _kMonths = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December',
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
 ];
 
 class _MonthHeader extends StatelessWidget {
@@ -265,6 +266,8 @@ class _MonthHeader extends StatelessWidget {
           _ArrowButton(icon: Icons.chevron_left, onTap: onPrev),
           const SizedBox(width: 2),
           _ArrowButton(icon: Icons.chevron_right, onTap: onNext),
+          const SizedBox(width: AppSpacing.sm),
+          const CalendarViewSwitcher(currentView: CalendarView.monthly),
         ],
       ),
     );

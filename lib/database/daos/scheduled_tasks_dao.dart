@@ -7,10 +7,7 @@ import '../tables/items.dart';
 part 'scheduled_tasks_dao.g.dart';
 
 class ScheduledTaskWithDate {
-  const ScheduledTaskWithDate({
-    required this.item,
-    required this.itemDate,
-  });
+  const ScheduledTaskWithDate({required this.item, required this.itemDate});
 
   final Item item;
   final ItemDate itemDate;
@@ -25,53 +22,59 @@ class ScheduledTasksDao extends DatabaseAccessor<AppDatabase>
     final dayStart = DateTime(date.year, date.month, date.day);
     final nextDay = dayStart.add(const Duration(days: 1));
 
-    final query = select(items).join([
-      innerJoin(itemDates, itemDates.itemId.equalsExp(items.id)),
-    ])
-      ..where(items.itemType.equals('scheduled_task'))
-      ..where(items.deletedAt.isNull())
-      ..where(items.completed.equals(false))
-      ..where(itemDates.endDate.isBiggerOrEqualValue(dayStart))
-      ..where(itemDates.endDate.isSmallerThanValue(nextDay));
+    final query =
+        select(
+            items,
+          ).join([innerJoin(itemDates, itemDates.itemId.equalsExp(items.id))])
+          ..where(items.itemType.equals('scheduled_task'))
+          ..where(items.deletedAt.isNull())
+          ..where(items.completed.equals(false))
+          ..where(itemDates.endDate.isBiggerOrEqualValue(dayStart))
+          ..where(itemDates.endDate.isSmallerThanValue(nextDay));
 
     return query.watch().map(
-          (rows) => rows
-              .map(
-                (row) => ScheduledTaskWithDate(
-                  item: row.readTable(items),
-                  itemDate: row.readTable(itemDates),
-                ),
-              )
-              .toList(),
-        );
+      (rows) => rows
+          .map(
+            (row) => ScheduledTaskWithDate(
+              item: row.readTable(items),
+              itemDate: row.readTable(itemDates),
+            ),
+          )
+          .toList(),
+    );
   }
 
   Stream<List<ScheduledTaskWithDate>> watchTasksForDateRange(
     DateTime start,
     DateTime end,
   ) {
-    final query = select(items).join([
-      innerJoin(itemDates, itemDates.itemId.equalsExp(items.id)),
-    ])
-      ..where(items.itemType.equals('scheduled_task'))
-      ..where(items.deletedAt.isNull())
-      ..where(items.completed.equals(false))
-      ..where(itemDates.endDate.isBiggerOrEqualValue(start))
-      ..where(itemDates.endDate.isSmallerThanValue(end));
+    final query =
+        select(
+            items,
+          ).join([innerJoin(itemDates, itemDates.itemId.equalsExp(items.id))])
+          ..where(items.itemType.equals('scheduled_task'))
+          ..where(items.deletedAt.isNull())
+          ..where(items.completed.equals(false))
+          ..where(itemDates.endDate.isBiggerOrEqualValue(start))
+          ..where(itemDates.endDate.isSmallerThanValue(end));
 
     return query.watch().map(
-          (rows) => rows
-              .map(
-                (row) => ScheduledTaskWithDate(
-                  item: row.readTable(items),
-                  itemDate: row.readTable(itemDates),
-                ),
-              )
-              .toList(),
-        );
+      (rows) => rows
+          .map(
+            (row) => ScheduledTaskWithDate(
+              item: row.readTable(items),
+              itemDate: row.readTable(itemDates),
+            ),
+          )
+          .toList(),
+    );
   }
 
-  Future<int> insertScheduledTask(String title, DateTime date, {String? notes}) {
+  Future<int> insertScheduledTask(
+    String title,
+    DateTime date, {
+    String? notes,
+  }) {
     final now = DateTime.now();
 
     return transaction(() async {
@@ -86,10 +89,7 @@ class ScheduledTasksDao extends DatabaseAccessor<AppDatabase>
       );
 
       await into(itemDates).insert(
-        ItemDatesCompanion.insert(
-          itemId: Value(itemId),
-          endDate: Value(date),
-        ),
+        ItemDatesCompanion.insert(itemId: Value(itemId), endDate: Value(date)),
       );
 
       return itemId;
@@ -112,17 +112,18 @@ class ScheduledTasksDao extends DatabaseAccessor<AppDatabase>
     final now = DateTime.now();
 
     return (update(items)..where((tbl) => tbl.id.equals(id))).write(
-      ItemsCompanion(
-        deletedAt: Value(now),
-      ),
+      ItemsCompanion(deletedAt: Value(now)),
     );
   }
 
-  Future<void> updateTask(int id, {String? title, DateTime? date, String? notes}) {
+  Future<void> updateTask(
+    int id, {
+    String? title,
+    DateTime? date,
+    String? notes,
+  }) {
     final now = DateTime.now();
-    var itemUpdate = ItemsCompanion(
-      updatedAt: Value(now),
-    );
+    var itemUpdate = ItemsCompanion(updatedAt: Value(now));
 
     if (title != null) {
       itemUpdate = itemUpdate.copyWith(title: Value(title));
@@ -133,13 +134,40 @@ class ScheduledTasksDao extends DatabaseAccessor<AppDatabase>
     }
 
     return transaction(() async {
-      await (update(items)..where((tbl) => tbl.id.equals(id))).write(itemUpdate);
+      await (update(
+        items,
+      )..where((tbl) => tbl.id.equals(id))).write(itemUpdate);
 
       if (date != null) {
         await (update(itemDates)..where((tbl) => tbl.itemId.equals(id))).write(
-          ItemDatesCompanion(
-            endDate: Value(date),
-          ),
+          ItemDatesCompanion(endDate: Value(date)),
+        );
+      }
+    });
+  }
+
+  Future<void> scheduleInboxTask(int id, DateTime date) {
+    final now = DateTime.now();
+
+    return transaction(() async {
+      await (update(items)..where((tbl) => tbl.id.equals(id))).write(
+        ItemsCompanion(
+          itemType: const Value('scheduled_task'),
+          updatedAt: Value(now),
+        ),
+      );
+
+      final existingDate = await (select(
+        itemDates,
+      )..where((tbl) => tbl.itemId.equals(id))).getSingleOrNull();
+
+      if (existingDate == null) {
+        await into(itemDates).insert(
+          ItemDatesCompanion.insert(itemId: Value(id), endDate: Value(date)),
+        );
+      } else {
+        await (update(itemDates)..where((tbl) => tbl.itemId.equals(id))).write(
+          ItemDatesCompanion(endDate: Value(date)),
         );
       }
     });

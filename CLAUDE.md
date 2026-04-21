@@ -198,12 +198,12 @@ Text: #202020 primary, #888888 muted
 - [x] DAOs created
 - [x] Riverpod providers wired up
 - [x] App shell and navigation
-- [ ] Inbox screen
-- [ ] Scheduled tasks screen
-- [ ] Events screen
-- [ ] Deadlines screen
-- [ ] Projects screen
-- [ ] Calendar views
+- [x] Inbox screen
+- [x] Scheduled tasks screen
+- [x] Events screen
+- [x] Deadlines screen
+- [x] Projects screen
+- [x] Calendar views
 - [ ] Keyboard shortcuts
 - [ ] Notifications
 - [ ] Recurrence logic

@@ -7,11 +7,22 @@ import '../../providers/events_provider.dart';
 import '../../providers/scheduled_tasks_provider.dart';
 import '../../providers/selected_date_provider.dart';
 import '../../theme/app_theme.dart';
+import 'calendar_view_switcher.dart';
 
 const _kDayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const _kMonthsAbbrev = [
-  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
 ];
 
 const _kTaskColor = AppColors.accent;
@@ -37,10 +48,10 @@ class _CalItem {
   final DateTime? endDate;
 
   Color get color => switch (kind) {
-        _ItemKind.scheduledTask => _kTaskColor,
-        _ItemKind.event => _kEventColor,
-        _ItemKind.deadline => _urgencyColor(endDate),
-      };
+    _ItemKind.scheduledTask => _kTaskColor,
+    _ItemKind.event => _kEventColor,
+    _ItemKind.deadline => _urgencyColor(endDate),
+  };
 }
 
 // ── Week helpers ──────────────────────────────────────────────────────────────
@@ -76,8 +87,7 @@ class WeeklyCalendarScreen extends ConsumerStatefulWidget {
       _WeeklyCalendarScreenState();
 }
 
-class _WeeklyCalendarScreenState
-    extends ConsumerState<WeeklyCalendarScreen> {
+class _WeeklyCalendarScreenState extends ConsumerState<WeeklyCalendarScreen> {
   late DateTime _focusedWeekStart;
   // Parent-owned hover key — only one column header highlighted at a time.
   DateTime? _hoveredDay;
@@ -90,13 +100,14 @@ class _WeeklyCalendarScreenState
 
   DateTime get _weekEnd => _focusedWeekStart.add(const Duration(days: 7));
 
-  void _prevWeek() =>
-      setState(() => _focusedWeekStart =
-          _focusedWeekStart.subtract(const Duration(days: 7)));
+  void _prevWeek() => setState(
+    () =>
+        _focusedWeekStart = _focusedWeekStart.subtract(const Duration(days: 7)),
+  );
 
-  void _nextWeek() =>
-      setState(() => _focusedWeekStart =
-          _focusedWeekStart.add(const Duration(days: 7)));
+  void _nextWeek() => setState(
+    () => _focusedWeekStart = _focusedWeekStart.add(const Duration(days: 7)),
+  );
 
   void _selectDay(DateTime day) {
     ref.read(selectedDateProvider.notifier).state = day;
@@ -114,39 +125,46 @@ class _WeeklyCalendarScreenState
     for (final t in tasks) {
       if (t.endDate == null) continue;
       final k = DateTime(t.endDate!.year, t.endDate!.month, t.endDate!.day);
-      map[k]?.add(_CalItem(
-        title: t.item.title,
-        kind: _ItemKind.scheduledTask,
-        endDate: t.endDate,
-      ));
+      map[k]?.add(
+        _CalItem(
+          title: t.item.title,
+          kind: _ItemKind.scheduledTask,
+          endDate: t.endDate,
+        ),
+      );
     }
 
     for (final e in events) {
       if (e.startDate == null || e.endDate == null) continue;
-      final eStart =
-          DateTime(e.startDate!.year, e.startDate!.month, e.startDate!.day);
-      final eEnd =
-          DateTime(e.endDate!.year, e.endDate!.month, e.endDate!.day);
+      final eStart = DateTime(
+        e.startDate!.year,
+        e.startDate!.month,
+        e.startDate!.day,
+      );
+      final eEnd = DateTime(e.endDate!.year, e.endDate!.month, e.endDate!.day);
       for (final d in days) {
         if (!d.isBefore(eStart) && !d.isAfter(eEnd)) {
-          map[d]!.add(_CalItem(
-            title: e.item.title,
-            kind: _ItemKind.event,
-            endDate: e.endDate,
-          ));
+          map[d]!.add(
+            _CalItem(
+              title: e.item.title,
+              kind: _ItemKind.event,
+              endDate: e.endDate,
+            ),
+          );
         }
       }
     }
 
     for (final d in deadlines) {
       if (d.endDate == null) continue;
-      final k =
-          DateTime(d.endDate!.year, d.endDate!.month, d.endDate!.day);
-      map[k]?.add(_CalItem(
-        title: d.item.title,
-        kind: _ItemKind.deadline,
-        endDate: d.endDate,
-      ));
+      final k = DateTime(d.endDate!.year, d.endDate!.month, d.endDate!.day);
+      map[k]?.add(
+        _CalItem(
+          title: d.item.title,
+          kind: _ItemKind.deadline,
+          endDate: d.endDate,
+        ),
+      );
     }
 
     return map;
@@ -188,18 +206,17 @@ class _WeeklyCalendarScreenState
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               for (int i = 0; i < 7; i++) ...[
-                if (i > 0)
-                  Container(width: 1, color: AppColors.divider),
+                if (i > 0) Container(width: 1, color: AppColors.divider),
                 Expanded(
                   child: _DayColumn(
                     day: days[i],
                     isToday: _isSameDay(days[i], today),
                     isSelected: _isSameDay(days[i], selectedDay),
-                    isHovered: _hoveredDay != null &&
+                    isHovered:
+                        _hoveredDay != null &&
                         _isSameDay(_hoveredDay!, days[i]),
-                    onHoverChanged: (on) => setState(
-                      () => _hoveredDay = on ? days[i] : null,
-                    ),
+                    onHoverChanged: (on) =>
+                        setState(() => _hoveredDay = on ? days[i] : null),
                     onTap: () => _selectDay(days[i]),
                     items: itemsByDay[days[i]] ?? const [],
                   ),
@@ -248,6 +265,8 @@ class _WeekNavBar extends StatelessWidget {
           _ArrowButton(icon: Icons.chevron_left, onTap: onPrev),
           const SizedBox(width: 2),
           _ArrowButton(icon: Icons.chevron_right, onTap: onNext),
+          const SizedBox(width: AppSpacing.sm),
+          const CalendarViewSwitcher(currentView: CalendarView.weekly),
         ],
       ),
     );
@@ -329,12 +348,12 @@ class _DayColumn extends StatelessWidget {
           child: items.isEmpty
               ? const SizedBox.shrink()
               : SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(
-                    vertical: AppSpacing.xs,
-                  ),
+                  padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: items.map((item) => _ItemChip(item: item)).toList(),
+                    children: items
+                        .map((item) => _ItemChip(item: item))
+                        .toList(),
                   ),
                 ),
         ),
@@ -364,18 +383,15 @@ class _DayHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color bg = isHovered
-        ? AppColors.hoverBackground
-        : Colors.transparent;
+    final Color bg = isHovered ? AppColors.hoverBackground : Colors.transparent;
 
     final Color dateNumBg = isToday
         ? AppColors.accent
         : isSelected
-            ? AppColors.accent.withValues(alpha: 0.25)
-            : Colors.transparent;
+        ? AppColors.accent.withValues(alpha: 0.25)
+        : Colors.transparent;
 
-    final Color labelColor =
-        isToday ? AppColors.primary : AppColors.muted;
+    final Color labelColor = isToday ? AppColors.primary : AppColors.muted;
 
     return MouseRegion(
       cursor: SystemMouseCursors.click,
@@ -386,9 +402,7 @@ class _DayHeader extends StatelessWidget {
         onTap: onTap,
         child: Container(
           color: bg,
-          padding: const EdgeInsets.symmetric(
-            vertical: AppSpacing.sm,
-          ),
+          padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [

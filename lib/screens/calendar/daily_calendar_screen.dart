@@ -7,20 +7,37 @@ import '../../providers/inbox_provider.dart';
 import '../../providers/scheduled_tasks_provider.dart';
 import '../../providers/selected_date_provider.dart';
 import '../../theme/app_theme.dart';
+import 'calendar_view_switcher.dart';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
-const _kFirstHour = 6;
-const _kLastHour = 22; // slots 06:00–22:00 represent 06:00–23:00
+const _kFirstHour = 0;
+const _kLastHour = 23; // slots 0–23 represent 0:00–23:00
 const _kSlotHeight = 60.0;
 const _kTimeAxisWidth = 52.0;
 
 const _kWeekdays = [
-  'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday',
+  'Monday',
+  'Tuesday',
+  'Wednesday',
+  'Thursday',
+  'Friday',
+  'Saturday',
+  'Sunday',
 ];
 const _kMonths = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December',
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
 ];
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -38,11 +55,18 @@ String _formatHour(int h) {
 // ── Drag data ─────────────────────────────────────────────────────────────────
 
 class _TaskDragData {
-  const _TaskDragData({required this.taskId, required this.title});
+  const _TaskDragData({
+    required this.taskId,
+    required this.title,
+    required this.source,
+  });
 
   final int taskId;
   final String title;
+  final _DragSource source;
 }
+
+enum _DragSource { scheduled, inbox }
 
 // ── Screen ────────────────────────────────────────────────────────────────────
 
@@ -98,20 +122,24 @@ class _DateBar extends ConsumerWidget {
           Expanded(
             child: Text(
               label,
-              style: AppTextStyles.itemTitle.copyWith(fontWeight: FontWeight.w600),
+              style: AppTextStyles.itemTitle.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
           _ArrowButton(
             icon: Icons.chevron_left,
-            onTap: () => ref.read(selectedDateProvider.notifier).state =
-                date.subtract(const Duration(days: 1)),
+            onTap: () => ref.read(selectedDateProvider.notifier).state = date
+                .subtract(const Duration(days: 1)),
           ),
           const SizedBox(width: 2),
           _ArrowButton(
             icon: Icons.chevron_right,
-            onTap: () => ref.read(selectedDateProvider.notifier).state =
-                date.add(const Duration(days: 1)),
+            onTap: () => ref.read(selectedDateProvider.notifier).state = date
+                .add(const Duration(days: 1)),
           ),
+          const SizedBox(width: AppSpacing.sm),
+          const CalendarViewSwitcher(currentView: CalendarView.daily),
         ],
       ),
     );
@@ -150,19 +178,26 @@ class _TimelinePanelState extends ConsumerState<_TimelinePanel> {
     if (!_scrollController.hasClients) return;
     final now = DateTime.now();
     final sel = ref.read(selectedDateProvider);
-    final target = _isSameDay(now, sel) ? (now.hour - 1).clamp(_kFirstHour, _kLastHour) : 8;
-    final offset = ((target - _kFirstHour) * _kSlotHeight)
-        .clamp(0.0, _scrollController.position.maxScrollExtent);
+    final target = _isSameDay(now, sel)
+        ? (now.hour - 1).clamp(_kFirstHour, _kLastHour)
+        : 8;
+    final offset = ((target - _kFirstHour) * _kSlotHeight).clamp(
+      0.0,
+      _scrollController.position.maxScrollExtent,
+    );
     _scrollController.jumpTo(offset);
   }
 
   Future<void> _onDrop(_TaskDragData data, int hour) async {
     final sel = ref.read(selectedDateProvider);
     final newDate = DateTime(sel.year, sel.month, sel.day, hour);
-    await ref
-        .read(appDatabaseProvider)
-        .scheduledTasksDao
-        .updateTask(data.taskId, date: newDate);
+    final db = ref.read(appDatabaseProvider);
+
+    if (data.source == _DragSource.inbox) {
+      await db.scheduledTasksDao.scheduleInboxTask(data.taskId, newDate);
+    } else {
+      await db.scheduledTasksDao.updateTask(data.taskId, date: newDate);
+    }
   }
 
   @override
@@ -273,7 +308,11 @@ class _UntimedTaskRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Draggable<_TaskDragData>(
-      data: _TaskDragData(taskId: task.item.id, title: task.item.title),
+      data: _TaskDragData(
+        taskId: task.item.id,
+        title: task.item.title,
+        source: _DragSource.scheduled,
+      ),
       dragAnchorStrategy: pointerDragAnchorStrategy,
       feedback: _DragFeedback(title: task.item.title),
       childWhenDragging: Opacity(
@@ -428,6 +467,30 @@ class _ScheduledTaskBlock extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return Draggable<_TaskDragData>(
+      data: _TaskDragData(
+        taskId: task.item.id,
+        title: task.item.title,
+        source: _DragSource.scheduled,
+      ),
+      dragAnchorStrategy: pointerDragAnchorStrategy,
+      feedback: _DragFeedback(title: task.item.title),
+      childWhenDragging: Opacity(
+        opacity: 0.35,
+        child: _ScheduledTaskBlockContent(task: task),
+      ),
+      child: _ScheduledTaskBlockContent(task: task),
+    );
+  }
+}
+
+class _ScheduledTaskBlockContent extends StatelessWidget {
+  const _ScheduledTaskBlockContent({required this.task});
+
+  final ScheduledTaskWithDate task;
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(bottom: 2),
       padding: const EdgeInsets.fromLTRB(8, 4, 8, 4),
@@ -533,38 +596,75 @@ class _InboxRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MouseRegion(
-      onEnter: (_) => onHoverChanged(true),
-      onExit: (_) => onHoverChanged(false),
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        child: Container(
-          color: hovered ? AppColors.hoverBackground : AppColors.background,
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.md,
-            vertical: AppSpacing.sm,
-          ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              GestureDetector(
-                onTap: onComplete,
-                child: Container(
-                  width: 16,
-                  height: 16,
-                  margin: const EdgeInsets.only(top: 1),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: AppColors.muted, width: 1.5),
-                  ),
+    return Draggable<_TaskDragData>(
+      data: _TaskDragData(
+        taskId: task.id,
+        title: task.title,
+        source: _DragSource.inbox,
+      ),
+      dragAnchorStrategy: pointerDragAnchorStrategy,
+      feedback: _DragFeedback(title: task.title),
+      childWhenDragging: Opacity(
+        opacity: 0.35,
+        child: _InboxRowContent(
+          task: task,
+          hovered: false,
+          onComplete: onComplete,
+        ),
+      ),
+      child: MouseRegion(
+        cursor: SystemMouseCursors.grab,
+        onEnter: (_) => onHoverChanged(true),
+        onExit: (_) => onHoverChanged(false),
+        child: _InboxRowContent(
+          task: task,
+          hovered: hovered,
+          onComplete: onComplete,
+        ),
+      ),
+    );
+  }
+}
+
+class _InboxRowContent extends StatelessWidget {
+  const _InboxRowContent({
+    required this.task,
+    required this.hovered,
+    required this.onComplete,
+  });
+
+  final Item task;
+  final bool hovered;
+  final VoidCallback onComplete;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        color: hovered ? AppColors.hoverBackground : AppColors.background,
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.sm,
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            GestureDetector(
+              onTap: onComplete,
+              child: Container(
+                width: 16,
+                height: 16,
+                margin: const EdgeInsets.only(top: 1),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: AppColors.muted, width: 1.5),
                 ),
               ),
-              const SizedBox(width: AppSpacing.sm),
-              Expanded(
-                child: Text(task.title, style: AppTextStyles.itemTitle),
-              ),
-            ],
-          ),
+            ),
+            const SizedBox(width: AppSpacing.sm),
+            Expanded(child: Text(task.title, style: AppTextStyles.itemTitle)),
+          ],
         ),
       ),
     );
