@@ -47,6 +47,7 @@ class _AppSidebarState extends ConsumerState<AppSidebar> {
         LogicalKeyboardKey.keyI => _navigateTo('/inbox'),
         LogicalKeyboardKey.keyE => _navigateTo('/events-deadlines'),
         LogicalKeyboardKey.keyC => _navigateTo('/calendar'),
+        LogicalKeyboardKey.keyU => _navigateTo('/upcoming'),
         LogicalKeyboardKey.keyP => _navigateTo('/projects'),
         _ => KeyEventResult.ignored,
       };
@@ -156,6 +157,14 @@ class _AppSidebarState extends ConsumerState<AppSidebar> {
                   label: 'Calendar',
                   route: '/calendar',
                   isActive: currentPath.startsWith('/calendar'),
+                  hoveredKey: _hoveredKey,
+                  onHoverChanged: _setHoveredKey,
+                ),
+                _NavItemTile(
+                  icon: Icons.schedule_outlined,
+                  label: 'Upcoming',
+                  route: '/upcoming',
+                  isActive: currentPath.startsWith('/upcoming'),
                   hoveredKey: _hoveredKey,
                   onHoverChanged: _setHoveredKey,
                 ),

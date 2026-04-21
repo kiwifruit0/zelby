@@ -61,7 +61,12 @@ final GoRouter _router = GoRouter(
               _noTransitionPage(state, const MonthlyCalendarScreen()),
         ),
         GoRoute(
-          path: '/calendar/upcoming',
+          path: '/calendar/schedule',
+          pageBuilder: (context, state) =>
+              _noTransitionPage(state, const UpcomingCalendarScreen()),
+        ),
+        GoRoute(
+          path: '/upcoming',
           pageBuilder: (context, state) =>
               _noTransitionPage(state, const UpcomingCalendarScreen()),
         ),

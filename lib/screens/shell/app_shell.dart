@@ -26,9 +26,10 @@ class _AppShellState extends State<AppShell> {
     if (path.startsWith('/inbox')) return 0;
     if (path.startsWith('/today')) return 1;
     if (path.startsWith('/calendar')) return 2;
-    if (path.startsWith('/events-deadlines')) return 3;
-    if (path.startsWith('/projects')) return 4;
-    if (path.startsWith('/search')) return 5;
+    if (path.startsWith('/upcoming')) return 3;
+    if (path.startsWith('/events-deadlines')) return 4;
+    if (path.startsWith('/projects')) return 5;
+    if (path.startsWith('/search')) return 6;
     return 0;
   }
 
@@ -41,10 +42,12 @@ class _AppShellState extends State<AppShell> {
       case 2:
         context.go('/calendar');
       case 3:
-        context.go('/events-deadlines');
+        context.go('/upcoming');
       case 4:
-        context.go('/projects');
+        context.go('/events-deadlines');
       case 5:
+        context.go('/projects');
+      case 6:
         context.go('/search');
     }
   }
@@ -93,6 +96,10 @@ class _AppShellState extends State<AppShell> {
           BottomNavigationBarItem(
             icon: Icon(Icons.calendar_today_outlined),
             label: 'Calendar',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.schedule_outlined),
+            label: 'Upcoming',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.access_time),

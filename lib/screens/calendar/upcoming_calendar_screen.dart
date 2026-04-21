@@ -90,7 +90,7 @@ class _UpcomingCalendarScreenState
                 ),
               ),
               const CalendarViewSwitcher(
-                  currentView: CalendarView.upcoming),
+                  currentView: CalendarView.schedule),
             ],
           ),
         ),
