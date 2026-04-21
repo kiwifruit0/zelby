@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'screens/calendar/daily_calendar_screen.dart';
 import 'screens/calendar/monthly_calendar_screen.dart';
+import 'screens/calendar/weekly_calendar_screen.dart';
 import 'screens/deadlines/deadlines_screen.dart';
 import 'screens/events/events_screen.dart';
 import 'screens/inbox/inbox_screen.dart';
@@ -52,16 +54,14 @@ final GoRouter _router = GoRouter(
         ),
         GoRoute(
           path: '/calendar/daily',
-          pageBuilder: (context, state) => _noTransitionPage(
-            state,
-            const _PlaceholderPage(title: 'Daily'),
-          ),
+          pageBuilder: (context, state) =>
+              _noTransitionPage(state, const DailyCalendarScreen()),
         ),
         GoRoute(
           path: '/calendar/weekly',
           pageBuilder: (context, state) => _noTransitionPage(
             state,
-            const _PlaceholderPage(title: 'Weekly'),
+            const WeeklyCalendarScreen(),
           ),
         ),
         GoRoute(
