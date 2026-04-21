@@ -2,30 +2,33 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../providers/inbox_provider.dart';
+import '../../providers/projects_provider.dart';
+import '../../providers/database_provider.dart';
+import '../../providers/sidebar_counts_provider.dart';
 import '../../theme/app_theme.dart';
 
-/// Intent dispatched when the user presses '/' to focus search.
-/// Exposed so AppShell can wire up the search field's FocusNode via Actions.
 class FocusSearchIntent extends Intent {
   const FocusSearchIntent();
 }
 
-class AppSidebar extends StatefulWidget {
+class AppSidebar extends ConsumerStatefulWidget {
   const AppSidebar({super.key, required this.onSearchFocus});
 
   final VoidCallback onSearchFocus;
 
   @override
-  State<AppSidebar> createState() => _AppSidebarState();
+  ConsumerState<AppSidebar> createState() => _AppSidebarState();
 }
 
-class _AppSidebarState extends State<AppSidebar> {
-  // Tracks whether a 'g' chord prefix is pending (for g+i, g+c, g+p).
+class _AppSidebarState extends ConsumerState<AppSidebar> {
   bool _gPending = false;
-  String? _hoveredRoute;
+  String? _hoveredKey;
   Timer? _chordTimer;
+  bool _projectsExpanded = true;
 
   @override
   void dispose() {
@@ -46,16 +49,21 @@ class _AppSidebarState extends State<AppSidebar> {
         LogicalKeyboardKey.keyD => _navigateTo('/deadlines'),
         LogicalKeyboardKey.keyC => _navigateTo('/calendar'),
         LogicalKeyboardKey.keyP => _navigateTo('/projects'),
+        LogicalKeyboardKey.keyS => _navigateTo('/schedule'),
         _ => KeyEventResult.ignored,
       };
     }
 
     if (event.logicalKey == LogicalKeyboardKey.keyG) {
       setState(() => _gPending = true);
-      // Auto-cancel the pending chord after 600 ms with no follow-up key.
       _chordTimer = Timer(const Duration(milliseconds: 600), () {
         if (mounted) setState(() => _gPending = false);
       });
+      return KeyEventResult.handled;
+    }
+
+    if (event.logicalKey == LogicalKeyboardKey.keyN) {
+      _addInboxTask();
       return KeyEventResult.handled;
     }
 
@@ -67,19 +75,25 @@ class _AppSidebarState extends State<AppSidebar> {
     return KeyEventResult.handled;
   }
 
-  void _setHoveredRoute(String route, bool isHovered) {
+  void _setHoveredKey(String key, bool isHovered) {
     setState(() {
       if (isHovered) {
-        _hoveredRoute = route;
-      } else if (_hoveredRoute == route) {
-        _hoveredRoute = null;
+        _hoveredKey = key;
+      } else if (_hoveredKey == key) {
+        _hoveredKey = null;
       }
     });
+  }
+
+  Future<void> _addInboxTask() async {
+    final db = ref.read(appDatabaseProvider);
+    await db.inboxDao.insertTask('New task');
   }
 
   @override
   Widget build(BuildContext context) {
     final currentPath = GoRouterState.of(context).uri.path;
+    final countsAsync = ref.watch(sidebarCountsProvider);
 
     return Shortcuts(
       shortcuts: const {
@@ -107,77 +121,82 @@ class _AppSidebarState extends State<AppSidebar> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const _SidebarHeader(),
+                _AddTaskButton(
+                  hoveredKey: _hoveredKey,
+                  onHoverChanged: _setHoveredKey,
+                  onTap: _addInboxTask,
+                ),
+                const SizedBox(height: AppSpacing.sm),
                 _NavItemTile(
                   icon: Icons.search,
                   label: 'Search',
+                  route: '/search',
                   isActive: currentPath.startsWith('/search'),
-                  isHovered: _hoveredRoute == '/search',
-                  onHoverChanged: (hovered) =>
-                      _setHoveredRoute('/search', hovered),
-                  onTap: () => context.go('/search'),
+                  hoveredKey: _hoveredKey,
+                  onHoverChanged: _setHoveredKey,
                 ),
                 _NavItemTile(
                   icon: Icons.inbox_outlined,
                   label: 'Inbox',
+                  route: '/inbox',
+                  count: countsAsync.value?.inboxCount,
                   isActive: currentPath.startsWith('/inbox'),
-                  isHovered: _hoveredRoute == '/inbox',
-                  onHoverChanged: (hovered) =>
-                      _setHoveredRoute('/inbox', hovered),
-                  onTap: () => context.go('/inbox'),
-                ),
-                _NavItemTile(
-                  icon: Icons.event_outlined,
-                  label: 'Events',
-                  isActive: currentPath.startsWith('/events'),
-                  isHovered: _hoveredRoute == '/events',
-                  onHoverChanged: (hovered) =>
-                      _setHoveredRoute('/events', hovered),
-                  onTap: () => context.go('/events'),
-                ),
-                _NavItemTile(
-                  icon: Icons.flag_outlined,
-                  label: 'Deadlines',
-                  isActive: currentPath.startsWith('/deadlines'),
-                  isHovered: _hoveredRoute == '/deadlines',
-                  onHoverChanged: (hovered) =>
-                      _setHoveredRoute('/deadlines', hovered),
-                  onTap: () => context.go('/deadlines'),
+                  hoveredKey: _hoveredKey,
+                  onHoverChanged: _setHoveredKey,
                 ),
                 _NavItemTile(
                   icon: Icons.today_outlined,
                   label: 'Today',
+                  route: '/today',
+                  count: countsAsync.value?.todayCount,
                   isActive: currentPath.startsWith('/today'),
-                  isHovered: _hoveredRoute == '/today',
-                  onHoverChanged: (hovered) =>
-                      _setHoveredRoute('/today', hovered),
-                  onTap: () => context.go('/today'),
+                  hoveredKey: _hoveredKey,
+                  onHoverChanged: _setHoveredKey,
                 ),
                 _NavItemTile(
                   icon: Icons.schedule_outlined,
                   label: 'Schedule',
+                  route: '/schedule',
                   isActive: currentPath.startsWith('/schedule'),
-                  isHovered: _hoveredRoute == '/schedule',
-                  onHoverChanged: (hovered) =>
-                      _setHoveredRoute('/schedule', hovered),
-                  onTap: () => context.go('/schedule'),
+                  hoveredKey: _hoveredKey,
+                  onHoverChanged: _setHoveredKey,
                 ),
                 _NavItemTile(
                   icon: Icons.calendar_today_outlined,
                   label: 'Calendar',
+                  route: '/calendar',
                   isActive: currentPath.startsWith('/calendar'),
-                  isHovered: _hoveredRoute == '/calendar',
-                  onHoverChanged: (hovered) =>
-                      _setHoveredRoute('/calendar', hovered),
-                  onTap: () => context.go('/calendar'),
+                  hoveredKey: _hoveredKey,
+                  onHoverChanged: _setHoveredKey,
                 ),
                 _NavItemTile(
-                  icon: Icons.folder_outlined,
-                  label: 'Projects',
+                  icon: Icons.event_outlined,
+                  label: 'Events',
+                  route: '/events',
+                  count: countsAsync.value?.eventsCount,
+                  isActive: currentPath.startsWith('/events'),
+                  hoveredKey: _hoveredKey,
+                  onHoverChanged: _setHoveredKey,
+                ),
+                _NavItemTile(
+                  icon: Icons.flag_outlined,
+                  label: 'Deadlines',
+                  route: '/deadlines',
+                  count: countsAsync.value?.deadlinesCount,
+                  isActive: currentPath.startsWith('/deadlines'),
+                  hoveredKey: _hoveredKey,
+                  onHoverChanged: _setHoveredKey,
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                _ProjectsSection(
+                  isExpanded: _projectsExpanded,
                   isActive: currentPath.startsWith('/projects'),
-                  isHovered: _hoveredRoute == '/projects',
-                  onHoverChanged: (hovered) =>
-                      _setHoveredRoute('/projects', hovered),
-                  onTap: () => context.go('/projects'),
+                  hoveredKey: _hoveredKey,
+                  onHoverChanged: _setHoveredKey,
+                  onToggle: () =>
+                      setState(() => _projectsExpanded = !_projectsExpanded),
+                  onAddProject: _addProject,
+                  currentPath: currentPath,
                 ),
                 const Spacer(),
               ],
@@ -186,6 +205,11 @@ class _AppSidebarState extends State<AppSidebar> {
         ),
       ),
     );
+  }
+
+  Future<void> _addProject() async {
+    final db = ref.read(appDatabaseProvider);
+    await db.projectsDao.insertProject('New project');
   }
 }
 
@@ -214,40 +238,102 @@ class _SidebarHeader extends StatelessWidget {
   }
 }
 
-class _NavItemTile extends StatelessWidget {
-  const _NavItemTile({
-    required this.icon,
-    required this.label,
-    required this.isActive,
-    required this.isHovered,
+class _AddTaskButton extends StatelessWidget {
+  const _AddTaskButton({
+    required this.hoveredKey,
     required this.onHoverChanged,
     required this.onTap,
   });
 
+  final String? hoveredKey;
+  final void Function(String, bool) onHoverChanged;
+  final VoidCallback onTap;
+
+  static const _key = '_addTask';
+
+  @override
+  Widget build(BuildContext context) {
+    final isHovered = hoveredKey == _key;
+
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) => onHoverChanged(_key, true),
+      onExit: (_) => onHoverChanged(_key, false),
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: onTap,
+        child: Container(
+          margin: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.sm,
+            vertical: AppSpacing.sm,
+          ),
+          decoration: BoxDecoration(
+            color: isHovered ? AppColors.hoverBackground : Colors.transparent,
+            borderRadius: BorderRadius.circular(6),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                Icons.add,
+                size: 18,
+                color: isHovered ? AppColors.primary : AppColors.muted,
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Text(
+                'Add task',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: isHovered ? AppColors.primary : AppColors.muted,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _NavItemTile extends StatelessWidget {
+  const _NavItemTile({
+    required this.icon,
+    required this.label,
+    required this.route,
+    this.count,
+    required this.isActive,
+    required this.hoveredKey,
+    required this.onHoverChanged,
+  });
+
   final IconData icon;
   final String label;
+  final String route;
+  final int? count;
   final bool isActive;
-  final bool isHovered;
-  final ValueChanged<bool> onHoverChanged;
-  final VoidCallback onTap;
+  final String? hoveredKey;
+  final void Function(String, bool) onHoverChanged;
+
+  bool get _isHovered => hoveredKey == route;
 
   @override
   Widget build(BuildContext context) {
     final bgColor = isActive
         ? AppColors.accent.withValues(alpha: 0.12)
-        : isHovered
-        ? AppColors.hoverBackground
-        : Colors.transparent;
+        : _isHovered
+            ? AppColors.hoverBackground
+            : Colors.transparent;
 
-    final fgColor = isActive ? AppColors.accent : AppColors.muted;
+    final fgColor = isActive ? AppColors.accent : AppColors.primary;
 
     return MouseRegion(
       cursor: SystemMouseCursors.click,
-      onEnter: (_) => onHoverChanged(true),
-      onExit: (_) => onHoverChanged(false),
+      onEnter: (_) => onHoverChanged(route, true),
+      onExit: (_) => onHoverChanged(route, false),
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
-        onTap: onTap,
+        onTap: () => context.go(route),
         child: Container(
           margin: const EdgeInsets.symmetric(
             horizontal: AppSpacing.sm,
@@ -265,7 +351,231 @@ class _NavItemTile extends StatelessWidget {
             children: [
               Icon(icon, size: 16, color: fgColor),
               const SizedBox(width: AppSpacing.sm),
-              Text(label, style: AppTextStyles.body.copyWith(color: fgColor)),
+              Expanded(
+                child: Text(
+                  label,
+                  style: AppTextStyles.sidebarItem.copyWith(color: fgColor),
+                ),
+              ),
+              if (count != null && count! > 0)
+                Text(
+                  '$count',
+                  style: AppTextStyles.sidebarItemMuted.copyWith(fontSize: 12),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ProjectsSection extends ConsumerWidget {
+  const _ProjectsSection({
+    required this.isExpanded,
+    required this.isActive,
+    required this.hoveredKey,
+    required this.onHoverChanged,
+    required this.onToggle,
+    required this.onAddProject,
+    required this.currentPath,
+  });
+
+  final bool isExpanded;
+  final bool isActive;
+  final String? hoveredKey;
+  final void Function(String, bool) onHoverChanged;
+  final VoidCallback onToggle;
+  final VoidCallback onAddProject;
+  final String currentPath;
+
+  static const _headerKey = '_projectsHeader';
+
+  bool get _isHeaderHovered => hoveredKey == _headerKey;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final projectsAsync = ref.watch(allProjectsProvider);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _buildHeader(),
+        if (isExpanded)
+          projectsAsync.when(
+            loading: () => const SizedBox.shrink(),
+            error: (e, _) => const SizedBox.shrink(),
+            data: (projects) {
+              final active = projects.where((p) => p.deletedAt == null).toList();
+              if (active.isEmpty) return const SizedBox.shrink();
+              return _buildProjectList(active);
+            },
+          ),
+      ],
+    );
+  }
+
+  Widget _buildHeader() {
+    final bgColor = isActive
+        ? AppColors.accent.withValues(alpha: 0.12)
+        : _isHeaderHovered
+            ? AppColors.hoverBackground
+            : Colors.transparent;
+
+    final fgColor = isActive ? AppColors.accent : AppColors.primary;
+
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) => onHoverChanged(_headerKey, true),
+      onExit: (_) => onHoverChanged(_headerKey, false),
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: onToggle,
+        child: Container(
+          margin: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.sm,
+            vertical: 1,
+          ),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.sm,
+            vertical: AppSpacing.sm,
+          ),
+          decoration: BoxDecoration(
+            color: bgColor,
+            borderRadius: BorderRadius.circular(6),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                Icons.folder_outlined,
+                size: 16,
+                color: fgColor,
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: Text(
+                  'Projects',
+                  style: AppTextStyles.sidebarHeader.copyWith(color: fgColor),
+                ),
+              ),
+              if (_isHeaderHovered) ...[
+                GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: onAddProject,
+                  child: Padding(
+                    padding: const EdgeInsets.all(2),
+                    child: Icon(
+                      Icons.add,
+                      size: 16,
+                      color: fgColor,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 2),
+              ],
+              if (_isHeaderHovered || isActive)
+                Icon(
+                  isExpanded
+                      ? Icons.expand_more
+                      : Icons.chevron_right,
+                  size: 18,
+                  color: fgColor,
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProjectList(List<Item> projects) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: projects.map((project) {
+        final projectId = project.id;
+        final projectRoute = '/projects/$projectId';
+        final isActive = currentPath == projectRoute;
+
+        return _ProjectItemTile(
+          key: ValueKey(projectId),
+          project: project,
+          route: projectRoute,
+          isActive: isActive,
+          hoveredKey: hoveredKey,
+          onHoverChanged: onHoverChanged,
+        );
+      }).toList(),
+    );
+  }
+}
+
+class _ProjectItemTile extends StatelessWidget {
+  const _ProjectItemTile({
+    super.key,
+    required this.project,
+    required this.route,
+    required this.isActive,
+    required this.hoveredKey,
+    required this.onHoverChanged,
+  });
+
+  final Item project;
+  final String route;
+  final bool isActive;
+  final String? hoveredKey;
+  final void Function(String, bool) onHoverChanged;
+
+  bool get _isHovered => hoveredKey == route;
+
+  @override
+  Widget build(BuildContext context) {
+    final bgColor = isActive
+        ? AppColors.accent.withValues(alpha: 0.12)
+        : _isHovered
+            ? AppColors.hoverBackground
+            : Colors.transparent;
+
+    final fgColor = isActive ? AppColors.accent : AppColors.primary;
+
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) => onHoverChanged(route, true),
+      onExit: (_) => onHoverChanged(route, false),
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () => context.go(route),
+        child: Container(
+          margin: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.sm,
+            vertical: 1,
+          ),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.sm,
+            vertical: AppSpacing.sm,
+          ),
+          decoration: BoxDecoration(
+            color: bgColor,
+            borderRadius: BorderRadius.circular(6),
+          ),
+          child: Row(
+            children: [
+              const SizedBox(width: AppSpacing.md + 2),
+              Text(
+                '#',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: fgColor.withValues(alpha: 0.5),
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: Text(
+                  project.title,
+                  style: AppTextStyles.sidebarItem.copyWith(color: fgColor),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
             ],
           ),
         ),

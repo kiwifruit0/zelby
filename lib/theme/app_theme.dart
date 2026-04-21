@@ -52,6 +52,27 @@ class AppTextStyles {
     color: AppColors.muted,
     height: 1.4,
   );
+
+  static const TextStyle sidebarItem = TextStyle(
+    fontSize: 14,
+    color: AppColors.primary,
+    height: 1.4,
+    fontWeight: FontWeight.w400,
+  );
+
+  static const TextStyle sidebarItemMuted = TextStyle(
+    fontSize: 14,
+    color: AppColors.muted,
+    height: 1.4,
+    fontWeight: FontWeight.w400,
+  );
+
+  static const TextStyle sidebarHeader = TextStyle(
+    fontSize: 14,
+    color: AppColors.primary,
+    fontWeight: FontWeight.w600,
+    height: 1.4,
+  );
 }
 
 class AppSpacing {
