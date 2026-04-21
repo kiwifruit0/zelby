@@ -62,8 +62,7 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final projectAsync =
-        ref.watch(projectItemsProvider(widget.projectId));
+    final projectAsync = ref.watch(projectItemsProvider(widget.projectId));
 
     return projectAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
@@ -143,15 +142,12 @@ class _ProjectHeading extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return Padding(
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.sm,
-        AppSpacing.sm,
+        AppSpacing.xl,
         AppSpacing.md,
-        AppSpacing.xs,
-      ),
-      decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: AppColors.divider)),
+        AppSpacing.md,
       ),
       child: Row(
         children: [
@@ -160,16 +156,14 @@ class _ProjectHeading extends StatelessWidget {
             onTap: onBack,
             child: const Padding(
               padding: EdgeInsets.all(AppSpacing.xs),
-              child: Icon(Icons.chevron_left, size: 20, color: AppColors.muted),
+              child: Icon(Icons.chevron_left, size: 22, color: AppColors.muted),
             ),
           ),
           const SizedBox(width: AppSpacing.xs),
           Expanded(
             child: Text(
               title,
-              style: AppTextStyles.itemTitle.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
+              style: AppTextStyles.pageTitle.copyWith(fontSize: 40),
             ),
           ),
         ],
@@ -267,10 +261,7 @@ class _SectionHeader extends StatelessWidget {
               color: AppColors.muted,
             ),
             const SizedBox(width: 4),
-            Text(
-              label.toUpperCase(),
-              style: AppTextStyles.sectionHeader,
-            ),
+            Text(label.toUpperCase(), style: AppTextStyles.sectionHeader),
             const SizedBox(width: AppSpacing.xs),
             Text('$count', style: AppTextStyles.itemMeta),
           ],
@@ -421,10 +412,7 @@ class _ItemRow extends StatelessWidget {
                       const SizedBox(height: 2),
                       Text(item.item.notes!, style: AppTextStyles.itemMeta),
                     ],
-                    if (meta is! SizedBox) ...[
-                      const SizedBox(height: 2),
-                      meta,
-                    ],
+                    if (meta is! SizedBox) ...[const SizedBox(height: 2), meta],
                   ],
                 ),
               ),
@@ -537,9 +525,9 @@ class _AddItemBarState extends ConsumerState<_AddItemBar> {
       builder: (context, child) => Theme(
         data: Theme.of(context).copyWith(
           colorScheme: Theme.of(context).colorScheme.copyWith(
-                primary: AppColors.accent,
-                onPrimary: AppColors.primary,
-              ),
+            primary: AppColors.accent,
+            onPrimary: AppColors.primary,
+          ),
         ),
         child: child!,
       ),
@@ -564,9 +552,9 @@ class _AddItemBarState extends ConsumerState<_AddItemBar> {
       builder: (context, child) => Theme(
         data: Theme.of(context).copyWith(
           colorScheme: Theme.of(context).colorScheme.copyWith(
-                primary: AppColors.accent,
-                onPrimary: AppColors.primary,
-              ),
+            primary: AppColors.accent,
+            onPrimary: AppColors.primary,
+          ),
         ),
         child: child!,
       ),
@@ -594,8 +582,9 @@ class _AddItemBarState extends ConsumerState<_AddItemBar> {
         behavior: HitTestBehavior.opaque,
         onTap: () => setState(() => _showTypeSelector = true),
         child: Container(
-          color:
-              _promptHovered ? AppColors.hoverBackground : Colors.transparent,
+          color: _promptHovered
+              ? AppColors.hoverBackground
+              : Colors.transparent,
           padding: const EdgeInsets.symmetric(
             horizontal: AppSpacing.md,
             vertical: AppSpacing.sm,
@@ -736,7 +725,11 @@ class _AddItemBarState extends ConsumerState<_AddItemBar> {
       );
     }
     if (type == _NewItemType.subProject) {
-      return const Icon(Icons.folder_outlined, size: 18, color: AppColors.muted);
+      return const Icon(
+        Icons.folder_outlined,
+        size: 18,
+        color: AppColors.muted,
+      );
     }
     // task / deadline — circle
     return Container(
@@ -753,11 +746,11 @@ class _AddItemBarState extends ConsumerState<_AddItemBar> {
   }
 
   String _hintForType(_NewItemType type) => switch (type) {
-        _NewItemType.task => 'Task name',
-        _NewItemType.event => 'Event name',
-        _NewItemType.deadline => 'Deadline name',
-        _NewItemType.subProject => 'Sub-project name',
-      };
+    _NewItemType.task => 'Task name',
+    _NewItemType.event => 'Event name',
+    _NewItemType.deadline => 'Deadline name',
+    _NewItemType.subProject => 'Sub-project name',
+  };
 }
 
 class _TypeChip extends StatelessWidget {
@@ -798,7 +791,10 @@ class _DateChip extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: 4),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.sm,
+          vertical: 4,
+        ),
         decoration: BoxDecoration(
           border: Border.all(color: AppColors.divider),
           borderRadius: BorderRadius.circular(4),

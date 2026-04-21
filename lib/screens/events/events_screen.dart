@@ -31,11 +31,11 @@ class _EventsScreenState extends ConsumerState<EventsScreen> {
         const Padding(
           padding: EdgeInsets.fromLTRB(
             AppSpacing.md,
+            AppSpacing.xl,
             AppSpacing.md,
             AppSpacing.md,
-            AppSpacing.sm,
           ),
-          child: Text('EVENTS', style: AppTextStyles.sectionHeader),
+          child: Text('Events', style: AppTextStyles.pageTitle),
         ),
         Expanded(
           child: eventsAsync.when(
@@ -48,7 +48,8 @@ class _EventsScreenState extends ConsumerState<EventsScreen> {
               ),
             ),
             data: (events) {
-              final sorted = [...events]..sort((a, b) {
+              final sorted = [...events]
+                ..sort((a, b) {
                   final aStart = a.startDate ?? DateTime(9999);
                   final bStart = b.startDate ?? DateTime(9999);
                   return aStart.compareTo(bStart);
@@ -135,12 +136,15 @@ class _EventRow extends StatelessWidget {
     return !now.isBefore(s) && !now.isAfter(e);
   }
 
-  String _formatDate(DateTime dt) => '${dt.month}/${dt.day}/${dt.year.toString().substring(2)}';
+  String _formatDate(DateTime dt) =>
+      '${dt.month}/${dt.day}/${dt.year.toString().substring(2)}';
 
   @override
   Widget build(BuildContext context) {
     final happening = _isHappening();
-    final startLabel = event.startDate != null ? _formatDate(event.startDate!) : '?';
+    final startLabel = event.startDate != null
+        ? _formatDate(event.startDate!)
+        : '?';
     final endLabel = event.endDate != null ? _formatDate(event.endDate!) : '?';
     final dateRange = '$startLabel → $endLabel';
 
@@ -193,11 +197,17 @@ class _EventRow extends StatelessWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(event.item.title, style: AppTextStyles.itemTitle),
+                              Text(
+                                event.item.title,
+                                style: AppTextStyles.itemTitle,
+                              ),
                               if (event.item.notes != null &&
                                   event.item.notes!.isNotEmpty) ...[
                                 const SizedBox(height: 2),
-                                Text(event.item.notes!, style: AppTextStyles.itemMeta),
+                                Text(
+                                  event.item.notes!,
+                                  style: AppTextStyles.itemMeta,
+                                ),
                               ],
                               const SizedBox(height: 2),
                               Text(dateRange, style: AppTextStyles.itemMeta),
@@ -297,14 +307,14 @@ class _CaptureRowState extends State<_CaptureRow> {
   }
 
   Widget _datePickerTheme(BuildContext context, Widget? child) => Theme(
-        data: Theme.of(context).copyWith(
-          colorScheme: Theme.of(context).colorScheme.copyWith(
-                primary: AppColors.accent,
-                onPrimary: AppColors.primary,
-              ),
-        ),
-        child: child!,
-      );
+    data: Theme.of(context).copyWith(
+      colorScheme: Theme.of(context).colorScheme.copyWith(
+        primary: AppColors.accent,
+        onPrimary: AppColors.primary,
+      ),
+    ),
+    child: child!,
+  );
 
   String _fmt(DateTime dt) =>
       '${dt.month}/${dt.day}/${dt.year.toString().substring(2)}';

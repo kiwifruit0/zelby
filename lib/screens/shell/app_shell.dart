@@ -22,19 +22,12 @@ class _AppShellState extends State<AppShell> {
     super.dispose();
   }
 
-  String _titleForPath(String path) {
-    if (path.startsWith('/inbox')) return 'Inbox';
-    if (path.startsWith('/search')) return 'Search';
-    if (path.startsWith('/calendar')) return 'Calendar';
-    if (path.startsWith('/projects')) return 'Projects';
-    return '';
-  }
-
   int _bottomIndexForPath(String path) {
     if (path.startsWith('/inbox')) return 0;
-    if (path.startsWith('/calendar')) return 1;
-    if (path.startsWith('/projects')) return 2;
-    if (path.startsWith('/search')) return 3;
+    if (path.startsWith('/today')) return 1;
+    if (path.startsWith('/calendar')) return 2;
+    if (path.startsWith('/projects')) return 3;
+    if (path.startsWith('/search')) return 4;
     return 0;
   }
 
@@ -43,10 +36,12 @@ class _AppShellState extends State<AppShell> {
       case 0:
         context.go('/inbox');
       case 1:
-        context.go('/calendar');
+        context.go('/today');
       case 2:
-        context.go('/projects');
+        context.go('/calendar');
       case 3:
+        context.go('/projects');
+      case 4:
         context.go('/search');
     }
   }
@@ -54,7 +49,6 @@ class _AppShellState extends State<AppShell> {
   @override
   Widget build(BuildContext context) {
     final path = GoRouterState.of(context).uri.path;
-    final title = _titleForPath(path);
     final isDesktop = MediaQuery.sizeOf(context).width > 600;
 
     if (isDesktop) {
@@ -63,18 +57,8 @@ class _AppShellState extends State<AppShell> {
         body: SafeArea(
           child: Row(
             children: [
-              AppSidebar(
-                onSearchFocus: () => _searchFocusNode.requestFocus(),
-              ),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    _TopBar(title: title),
-                    Expanded(child: widget.child),
-                  ],
-                ),
-              ),
+              AppSidebar(onSearchFocus: () => _searchFocusNode.requestFocus()),
+              Expanded(child: widget.child),
             ],
           ),
         ),
@@ -83,16 +67,7 @@ class _AppShellState extends State<AppShell> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: SafeArea(
-        bottom: false,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            _TopBar(title: title),
-            Expanded(child: widget.child),
-          ],
-        ),
-      ),
+      body: SafeArea(bottom: false, child: widget.child),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _bottomIndexForPath(path),
         onTap: _onBottomNavTap,
@@ -109,6 +84,10 @@ class _AppShellState extends State<AppShell> {
             label: 'Inbox',
           ),
           BottomNavigationBarItem(
+            icon: Icon(Icons.today_outlined),
+            label: 'Today',
+          ),
+          BottomNavigationBarItem(
             icon: Icon(Icons.calendar_today_outlined),
             label: 'Calendar',
           ),
@@ -116,51 +95,7 @@ class _AppShellState extends State<AppShell> {
             icon: Icon(Icons.folder_outlined),
             label: 'Projects',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.search),
-            label: 'Search',
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _TopBar extends StatelessWidget {
-  const _TopBar({required this.title});
-
-  final String title;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 48,
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-      decoration: const BoxDecoration(
-        color: AppColors.background,
-        border: Border(bottom: BorderSide(color: AppColors.divider)),
-      ),
-      child: Row(
-        children: [
-          Text(
-            title,
-            style: AppTextStyles.itemTitle.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const Spacer(),
-          TextButton(
-            onPressed: () {},
-            style: TextButton.styleFrom(
-              foregroundColor: AppColors.muted,
-              textStyle: AppTextStyles.itemMeta,
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.sm,
-                vertical: AppSpacing.xs,
-              ),
-            ),
-            child: const Text('View'),
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
         ],
       ),
     );

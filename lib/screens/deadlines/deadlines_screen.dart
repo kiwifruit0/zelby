@@ -17,10 +17,7 @@ class _DeadlinesScreenState extends ConsumerState<DeadlinesScreen> {
   @override
   void initState() {
     super.initState();
-    ref
-        .read(appDatabaseProvider)
-        .deadlinesDao
-        .autoCompleteExpiredDeadlines();
+    ref.read(appDatabaseProvider).deadlinesDao.autoCompleteExpiredDeadlines();
   }
 
   @override
@@ -33,11 +30,11 @@ class _DeadlinesScreenState extends ConsumerState<DeadlinesScreen> {
         const Padding(
           padding: EdgeInsets.fromLTRB(
             AppSpacing.md,
+            AppSpacing.xl,
             AppSpacing.md,
             AppSpacing.md,
-            AppSpacing.sm,
           ),
-          child: Text('DEADLINES', style: AppTextStyles.sectionHeader),
+          child: Text('Deadlines', style: AppTextStyles.pageTitle),
         ),
         Expanded(
           child: deadlinesAsync.when(
@@ -144,8 +141,9 @@ class _DeadlineRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dateColor = _urgencyColor(deadline.endDate);
-    final dateLabel =
-        deadline.endDate != null ? _formatDate(deadline.endDate!) : '—';
+    final dateLabel = deadline.endDate != null
+        ? _formatDate(deadline.endDate!)
+        : '—';
 
     return MouseRegion(
       onEnter: (_) => onHoverChanged(true),
@@ -183,10 +181,7 @@ class _DeadlineRow extends StatelessWidget {
                     if (deadline.item.notes != null &&
                         deadline.item.notes!.isNotEmpty) ...[
                       const SizedBox(height: 2),
-                      Text(
-                        deadline.item.notes!,
-                        style: AppTextStyles.itemMeta,
-                      ),
+                      Text(deadline.item.notes!, style: AppTextStyles.itemMeta),
                     ],
                   ],
                 ),
@@ -260,9 +255,9 @@ class _CaptureRowState extends State<_CaptureRow> {
       builder: (context, child) => Theme(
         data: Theme.of(context).copyWith(
           colorScheme: Theme.of(context).colorScheme.copyWith(
-                primary: AppColors.accent,
-                onPrimary: AppColors.primary,
-              ),
+            primary: AppColors.accent,
+            onPrimary: AppColors.primary,
+          ),
         ),
         child: child!,
       ),
@@ -281,8 +276,9 @@ class _CaptureRowState extends State<_CaptureRow> {
           behavior: HitTestBehavior.opaque,
           onTap: _expand,
           child: Container(
-            color:
-                _promptHovered ? AppColors.hoverBackground : Colors.transparent,
+            color: _promptHovered
+                ? AppColors.hoverBackground
+                : Colors.transparent,
             padding: const EdgeInsets.symmetric(
               horizontal: AppSpacing.md,
               vertical: AppSpacing.sm,

@@ -12,6 +12,7 @@ import 'screens/projects/project_detail_screen.dart';
 import 'screens/projects/projects_screen.dart';
 import 'screens/scheduled/scheduled_screen.dart';
 import 'screens/shell/app_shell.dart';
+import 'screens/today/today_screen.dart';
 import 'theme/app_theme.dart';
 
 final GoRouter _router = GoRouter(
@@ -21,6 +22,11 @@ final GoRouter _router = GoRouter(
       pageBuilder: (context, state, child) =>
           _noTransitionPage(state, AppShell(child: child)),
       routes: [
+        GoRoute(
+          path: '/today',
+          pageBuilder: (context, state) =>
+              _noTransitionPage(state, const TodayScreen()),
+        ),
         GoRoute(
           path: '/inbox',
           pageBuilder: (context, state) =>
@@ -43,10 +49,8 @@ final GoRouter _router = GoRouter(
         ),
         GoRoute(
           path: '/search',
-          pageBuilder: (context, state) => _noTransitionPage(
-            state,
-            const _PlaceholderPage(title: 'Search'),
-          ),
+          pageBuilder: (context, state) =>
+              _noTransitionPage(state, const _PlaceholderPage(title: 'Search')),
         ),
         GoRoute(
           path: '/calendar',
@@ -59,17 +63,13 @@ final GoRouter _router = GoRouter(
         ),
         GoRoute(
           path: '/calendar/weekly',
-          pageBuilder: (context, state) => _noTransitionPage(
-            state,
-            const WeeklyCalendarScreen(),
-          ),
+          pageBuilder: (context, state) =>
+              _noTransitionPage(state, const WeeklyCalendarScreen()),
         ),
         GoRoute(
           path: '/calendar/monthly',
-          pageBuilder: (context, state) => _noTransitionPage(
-            state,
-            const MonthlyCalendarScreen(),
-          ),
+          pageBuilder: (context, state) =>
+              _noTransitionPage(state, const MonthlyCalendarScreen()),
         ),
         GoRoute(
           path: '/projects',
@@ -79,8 +79,7 @@ final GoRouter _router = GoRouter(
         GoRoute(
           path: '/projects/:id',
           pageBuilder: (context, state) {
-            final id =
-                int.tryParse(state.pathParameters['id'] ?? '') ?? 0;
+            final id = int.tryParse(state.pathParameters['id'] ?? '') ?? 0;
             return _noTransitionPage(state, ProjectDetailScreen(projectId: id));
           },
         ),
@@ -90,10 +89,7 @@ final GoRouter _router = GoRouter(
 );
 
 Page<void> _noTransitionPage(GoRouterState state, Widget child) {
-  return NoTransitionPage<void>(
-    key: state.pageKey,
-    child: child,
-  );
+  return NoTransitionPage<void>(key: state.pageKey, child: child);
 }
 
 class ZelbyApp extends StatelessWidget {
@@ -118,8 +114,18 @@ class _PlaceholderPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Text(title, style: AppTextStyles.bodyMuted),
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.md,
+        AppSpacing.xl,
+        AppSpacing.md,
+        AppSpacing.lg,
+      ),
+      children: [
+        Text(title, style: AppTextStyles.pageTitle),
+        const SizedBox(height: AppSpacing.md),
+        const Text('Coming soon', style: AppTextStyles.bodyMuted),
+      ],
     );
   }
 }

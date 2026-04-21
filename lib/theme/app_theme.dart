@@ -34,6 +34,13 @@ class AppTextStyles {
     height: 1.4,
   );
 
+  static const TextStyle pageTitle = TextStyle(
+    fontSize: 44,
+    color: AppColors.primary,
+    fontWeight: FontWeight.w700,
+    height: 1.1,
+  );
+
   static const TextStyle itemTitle = TextStyle(
     fontSize: 14,
     color: AppColors.primary,

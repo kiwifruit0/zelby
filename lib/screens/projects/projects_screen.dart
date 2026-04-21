@@ -21,11 +21,11 @@ class ProjectsScreen extends ConsumerWidget {
         const Padding(
           padding: EdgeInsets.fromLTRB(
             AppSpacing.md,
+            AppSpacing.xl,
             AppSpacing.md,
             AppSpacing.md,
-            AppSpacing.sm,
           ),
-          child: Text('PROJECTS', style: AppTextStyles.sectionHeader),
+          child: Text('Projects', style: AppTextStyles.pageTitle),
         ),
         Expanded(
           child: projectsAsync.when(
@@ -267,7 +267,11 @@ class _CaptureRowState extends State<_CaptureRow> {
           const SizedBox(
             width: 20,
             height: 20,
-            child: Icon(Icons.folder_outlined, size: 18, color: AppColors.muted),
+            child: Icon(
+              Icons.folder_outlined,
+              size: 18,
+              color: AppColors.muted,
+            ),
           ),
           const SizedBox(width: AppSpacing.sm),
           Expanded(

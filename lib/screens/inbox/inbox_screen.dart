@@ -20,11 +20,11 @@ class InboxScreen extends ConsumerWidget {
         const Padding(
           padding: EdgeInsets.fromLTRB(
             AppSpacing.md,
+            AppSpacing.xl,
             AppSpacing.md,
             AppSpacing.md,
-            AppSpacing.sm,
           ),
-          child: Text('INBOX', style: AppTextStyles.sectionHeader),
+          child: Text('Inbox', style: AppTextStyles.pageTitle),
         ),
         Expanded(
           child: tasksAsync.when(
@@ -61,15 +61,11 @@ class _TaskList extends ConsumerWidget {
           if (index == 0) {
             return const _EmptyState();
           }
-          return _CaptureRow(
-            onSubmit: (title) => _insert(ref, title),
-          );
+          return _CaptureRow(onSubmit: (title) => _insert(ref, title));
         }
 
         if (index == tasks.length) {
-          return _CaptureRow(
-            onSubmit: (title) => _insert(ref, title),
-          );
+          return _CaptureRow(onSubmit: (title) => _insert(ref, title));
         }
 
         return _TaskRow(
@@ -332,7 +328,10 @@ class _EmptyState extends StatelessWidget {
         vertical: AppSpacing.lg,
       ),
       child: Center(
-        child: Text("No tasks, you're all free :)", style: AppTextStyles.bodyMuted),
+        child: Text(
+          "No tasks, you're all free :)",
+          style: AppTextStyles.bodyMuted,
+        ),
       ),
     );
   }

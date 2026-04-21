@@ -40,6 +40,7 @@ class _AppSidebarState extends State<AppSidebar> {
       _chordTimer?.cancel();
       setState(() => _gPending = false);
       return switch (event.logicalKey) {
+        LogicalKeyboardKey.keyT => _navigateTo('/today'),
         LogicalKeyboardKey.keyI => _navigateTo('/inbox'),
         LogicalKeyboardKey.keyC => _navigateTo('/calendar'),
         LogicalKeyboardKey.keyP => _navigateTo('/projects'),
@@ -123,6 +124,15 @@ class _AppSidebarState extends State<AppSidebar> {
                   onTap: () => context.go('/inbox'),
                 ),
                 _NavItemTile(
+                  icon: Icons.today_outlined,
+                  label: 'Today',
+                  isActive: currentPath.startsWith('/today'),
+                  isHovered: _hoveredRoute == '/today',
+                  onHoverChanged: (hovered) =>
+                      _setHoveredRoute('/today', hovered),
+                  onTap: () => context.go('/today'),
+                ),
+                _NavItemTile(
                   icon: Icons.calendar_today_outlined,
                   label: 'Calendar',
                   isActive: currentPath.startsWith('/calendar'),
@@ -197,8 +207,8 @@ class _NavItemTile extends StatelessWidget {
     final bgColor = isActive
         ? AppColors.accent.withValues(alpha: 0.12)
         : isHovered
-            ? AppColors.hoverBackground
-            : Colors.transparent;
+        ? AppColors.hoverBackground
+        : Colors.transparent;
 
     final fgColor = isActive ? AppColors.accent : AppColors.muted;
 
@@ -226,10 +236,7 @@ class _NavItemTile extends StatelessWidget {
             children: [
               Icon(icon, size: 16, color: fgColor),
               const SizedBox(width: AppSpacing.sm),
-              Text(
-                label,
-                style: AppTextStyles.body.copyWith(color: fgColor),
-              ),
+              Text(label, style: AppTextStyles.body.copyWith(color: fgColor)),
             ],
           ),
         ),
