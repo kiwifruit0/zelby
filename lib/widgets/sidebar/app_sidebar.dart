@@ -169,7 +169,7 @@ class _AppSidebarState extends ConsumerState<AppSidebar> {
                   hoveredKey: _hoveredKey,
                   onHoverChanged: _setHoveredKey,
                 ),
-                const SizedBox(height: AppSpacing.sm),
+                const SizedBox(height: AppSpacing.lg),
                 _ProjectsSection(
                   isExpanded: _projectsExpanded,
                   isActive: currentPath.startsWith('/projects'),
@@ -247,7 +247,7 @@ class _AddTaskButton extends StatelessWidget {
         child: Container(
           margin: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
           padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.sm,
+            horizontal: AppSpacing.md,
             vertical: AppSpacing.sm,
           ),
           decoration: BoxDecoration(
@@ -259,14 +259,14 @@ class _AddTaskButton extends StatelessWidget {
               Icon(
                 Icons.add,
                 size: 18,
-                color: isHovered ? AppColors.primary : AppColors.muted,
+                color: AppColors.accent,
               ),
               const SizedBox(width: AppSpacing.sm),
               Text(
                 'Add task',
                 style: TextStyle(
-                  fontSize: 14,
-                  color: isHovered ? AppColors.primary : AppColors.muted,
+                  fontSize: 15,
+                  color: AppColors.accent,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -318,7 +318,7 @@ class _NavItemTile extends StatelessWidget {
         onTap: () => context.go(route),
         child: Container(
           margin: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.sm,
+            horizontal: AppSpacing.md,
             vertical: 1,
           ),
           padding: const EdgeInsets.symmetric(
@@ -331,7 +331,7 @@ class _NavItemTile extends StatelessWidget {
           ),
           child: Row(
             children: [
-              Icon(icon, size: 16, color: fgColor),
+              Icon(icon, size: 18, color: fgColor),
               const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: Text(
@@ -416,7 +416,7 @@ class _ProjectsSection extends ConsumerWidget {
         onTap: onToggle,
         child: Container(
           margin: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.sm,
+            horizontal: AppSpacing.md,
             vertical: 1,
           ),
           padding: const EdgeInsets.symmetric(
@@ -527,7 +527,7 @@ class _ProjectItemTile extends StatelessWidget {
         onTap: () => context.go(route),
         child: Container(
           margin: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.sm,
+            horizontal: AppSpacing.md,
             vertical: 1,
           ),
           padding: const EdgeInsets.symmetric(

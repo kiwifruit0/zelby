@@ -35,7 +35,7 @@ class AppTextStyles {
   );
 
   static const TextStyle pageTitle = TextStyle(
-    fontSize: 44,
+    fontSize: 30,
     color: AppColors.primary,
     fontWeight: FontWeight.w700,
     height: 1.1,
@@ -54,7 +54,7 @@ class AppTextStyles {
   );
 
   static const TextStyle sidebarItem = TextStyle(
-    fontSize: 14,
+    fontSize: 15,
     color: AppColors.primary,
     height: 1.4,
     fontWeight: FontWeight.w400,
@@ -79,7 +79,7 @@ class AppSpacing {
   AppSpacing._();
 
   static const double xs = 4;
-  static const double sm = 8;
+  static const double sm = 6;
   static const double md = 16;
   static const double lg = 24;
   static const double xl = 32;

@@ -163,7 +163,7 @@ class _ProjectHeading extends StatelessWidget {
           Expanded(
             child: Text(
               title,
-              style: AppTextStyles.pageTitle.copyWith(fontSize: 40),
+              style: AppTextStyles.pageTitle,
             ),
           ),
         ],
