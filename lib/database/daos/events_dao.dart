@@ -45,13 +45,15 @@ class EventsDao extends DatabaseAccessor<AppDatabase> with _$EventsDaoMixin {
 
   Stream<List<EventWithDates>> watchEventsForDateRange(
     DateTime start,
-    DateTime end,
-  ) {
+    DateTime end, {
+    bool includeCompleted = false,
+  }) {
     final query = select(items).join([
       innerJoin(itemDates, itemDates.itemId.equalsExp(items.id)),
     ])
       ..where(items.itemType.equals('event'))
       ..where(items.deletedAt.isNull())
+      ..where(includeCompleted ? const Constant(true) : items.completed.equals(false))
       ..where(itemDates.startDate.isNotNull())
       ..where(itemDates.endDate.isNotNull())
       ..where(itemDates.startDate.isSmallerOrEqualValue(end))

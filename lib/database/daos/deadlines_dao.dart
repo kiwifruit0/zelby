@@ -51,8 +51,35 @@ class DeadlinesDao extends DatabaseAccessor<AppDatabase>
     ])
       ..where(items.itemType.equals('deadline'))
       ..where(items.deletedAt.isNull())
+      ..where(items.completed.equals(false))
       ..where(itemDates.endDate.isBiggerOrEqualValue(dayStart))
       ..where(itemDates.endDate.isSmallerThanValue(nextDay));
+
+    return query.watch().map(
+          (rows) => rows
+              .map(
+                (row) => DeadlineWithDate(
+                  item: row.readTable(items),
+                  itemDate: row.readTable(itemDates),
+                ),
+              )
+              .toList(),
+        );
+  }
+
+  Stream<List<DeadlineWithDate>> watchAllDeadlinesForDateRange(
+    DateTime start,
+    DateTime end, {
+    bool includeCompleted = false,
+  }) {
+    final query = select(items).join([
+      innerJoin(itemDates, itemDates.itemId.equalsExp(items.id)),
+    ])
+      ..where(items.itemType.equals('deadline'))
+      ..where(items.deletedAt.isNull())
+      ..where(includeCompleted ? const Constant(true) : items.completed.equals(false))
+      ..where(itemDates.endDate.isBiggerOrEqualValue(start))
+      ..where(itemDates.endDate.isSmallerThanValue(end));
 
     return query.watch().map(
           (rows) => rows

@@ -10,7 +10,7 @@ import 'screens/events/events_screen.dart';
 import 'screens/inbox/inbox_screen.dart';
 import 'screens/projects/project_detail_screen.dart';
 import 'screens/projects/projects_screen.dart';
-import 'screens/scheduled/scheduled_screen.dart';
+import 'screens/schedule/schedule_screen.dart';
 import 'screens/shell/app_shell.dart';
 import 'screens/today/today_screen.dart';
 import 'theme/app_theme.dart';
@@ -33,9 +33,9 @@ final GoRouter _router = GoRouter(
               _noTransitionPage(state, const InboxScreen()),
         ),
         GoRoute(
-          path: '/scheduled',
+          path: '/schedule',
           pageBuilder: (context, state) =>
-              _noTransitionPage(state, const ScheduledScreen()),
+              _noTransitionPage(state, const ScheduleScreen()),
         ),
         GoRoute(
           path: '/events',

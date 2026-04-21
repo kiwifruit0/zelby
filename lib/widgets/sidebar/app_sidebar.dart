@@ -133,6 +133,15 @@ class _AppSidebarState extends State<AppSidebar> {
                   onTap: () => context.go('/today'),
                 ),
                 _NavItemTile(
+                  icon: Icons.schedule_outlined,
+                  label: 'Schedule',
+                  isActive: currentPath.startsWith('/schedule'),
+                  isHovered: _hoveredRoute == '/schedule',
+                  onHoverChanged: (hovered) =>
+                      _setHoveredRoute('/schedule', hovered),
+                  onTap: () => context.go('/schedule'),
+                ),
+                _NavItemTile(
                   icon: Icons.calendar_today_outlined,
                   label: 'Calendar',
                   isActive: currentPath.startsWith('/calendar'),

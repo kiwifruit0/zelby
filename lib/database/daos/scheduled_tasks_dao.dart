@@ -46,15 +46,16 @@ class ScheduledTasksDao extends DatabaseAccessor<AppDatabase>
 
   Stream<List<ScheduledTaskWithDate>> watchTasksForDateRange(
     DateTime start,
-    DateTime end,
-  ) {
+    DateTime end, {
+    bool includeCompleted = false,
+  }) {
     final query =
         select(
             items,
           ).join([innerJoin(itemDates, itemDates.itemId.equalsExp(items.id))])
           ..where(items.itemType.equals('scheduled_task'))
           ..where(items.deletedAt.isNull())
-          ..where(items.completed.equals(false))
+          ..where(includeCompleted ? const Constant(true) : items.completed.equals(false))
           ..where(itemDates.endDate.isBiggerOrEqualValue(start))
           ..where(itemDates.endDate.isSmallerThanValue(end));
 

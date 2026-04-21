@@ -25,9 +25,10 @@ class _AppShellState extends State<AppShell> {
   int _bottomIndexForPath(String path) {
     if (path.startsWith('/inbox')) return 0;
     if (path.startsWith('/today')) return 1;
-    if (path.startsWith('/calendar')) return 2;
-    if (path.startsWith('/projects')) return 3;
-    if (path.startsWith('/search')) return 4;
+    if (path.startsWith('/schedule')) return 2;
+    if (path.startsWith('/calendar')) return 3;
+    if (path.startsWith('/projects')) return 4;
+    if (path.startsWith('/search')) return 5;
     return 0;
   }
 
@@ -38,10 +39,12 @@ class _AppShellState extends State<AppShell> {
       case 1:
         context.go('/today');
       case 2:
-        context.go('/calendar');
+        context.go('/schedule');
       case 3:
-        context.go('/projects');
+        context.go('/calendar');
       case 4:
+        context.go('/projects');
+      case 5:
         context.go('/search');
     }
   }
@@ -86,6 +89,10 @@ class _AppShellState extends State<AppShell> {
           BottomNavigationBarItem(
             icon: Icon(Icons.today_outlined),
             label: 'Today',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.schedule_outlined),
+            label: 'Schedule',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.calendar_today_outlined),
