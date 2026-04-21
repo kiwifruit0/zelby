@@ -45,11 +45,9 @@ class _AppSidebarState extends ConsumerState<AppSidebar> {
       return switch (event.logicalKey) {
         LogicalKeyboardKey.keyT => _navigateTo('/today'),
         LogicalKeyboardKey.keyI => _navigateTo('/inbox'),
-        LogicalKeyboardKey.keyE => _navigateTo('/events'),
-        LogicalKeyboardKey.keyD => _navigateTo('/deadlines'),
+        LogicalKeyboardKey.keyE => _navigateTo('/events-deadlines'),
         LogicalKeyboardKey.keyC => _navigateTo('/calendar'),
         LogicalKeyboardKey.keyP => _navigateTo('/projects'),
-        LogicalKeyboardKey.keyS => _navigateTo('/schedule'),
         _ => KeyEventResult.ignored,
       };
     }
@@ -154,14 +152,6 @@ class _AppSidebarState extends ConsumerState<AppSidebar> {
                   onHoverChanged: _setHoveredKey,
                 ),
                 _NavItemTile(
-                  icon: Icons.schedule_outlined,
-                  label: 'Schedule',
-                  route: '/schedule',
-                  isActive: currentPath.startsWith('/schedule'),
-                  hoveredKey: _hoveredKey,
-                  onHoverChanged: _setHoveredKey,
-                ),
-                _NavItemTile(
                   icon: Icons.calendar_today_outlined,
                   label: 'Calendar',
                   route: '/calendar',
@@ -170,20 +160,12 @@ class _AppSidebarState extends ConsumerState<AppSidebar> {
                   onHoverChanged: _setHoveredKey,
                 ),
                 _NavItemTile(
-                  icon: Icons.event_outlined,
-                  label: 'Events',
-                  route: '/events',
-                  count: countsAsync.value?.eventsCount,
-                  isActive: currentPath.startsWith('/events'),
-                  hoveredKey: _hoveredKey,
-                  onHoverChanged: _setHoveredKey,
-                ),
-                _NavItemTile(
-                  icon: Icons.flag_outlined,
-                  label: 'Deadlines',
-                  route: '/deadlines',
-                  count: countsAsync.value?.deadlinesCount,
-                  isActive: currentPath.startsWith('/deadlines'),
+                  icon: Icons.access_time,
+                  label: 'Events & Deadlines',
+                  route: '/events-deadlines',
+                  count: (countsAsync.value?.eventsCount ?? 0) +
+                      (countsAsync.value?.deadlinesCount ?? 0),
+                  isActive: currentPath.startsWith('/events-deadlines'),
                   hoveredKey: _hoveredKey,
                   onHoverChanged: _setHoveredKey,
                 ),
@@ -406,7 +388,8 @@ class _ProjectsSection extends ConsumerWidget {
             loading: () => const SizedBox.shrink(),
             error: (e, _) => const SizedBox.shrink(),
             data: (projects) {
-              final active = projects.where((p) => p.deletedAt == null).toList();
+              final active =
+                  projects.where((p) => p.deletedAt == null).toList();
               if (active.isEmpty) return const SizedBox.shrink();
               return _buildProjectList(active);
             },
@@ -475,9 +458,7 @@ class _ProjectsSection extends ConsumerWidget {
               ],
               if (_isHeaderHovered || isActive)
                 Icon(
-                  isExpanded
-                      ? Icons.expand_more
-                      : Icons.chevron_right,
+                  isExpanded ? Icons.expand_more : Icons.chevron_right,
                   size: 18,
                   color: fgColor,
                 ),
@@ -494,13 +475,13 @@ class _ProjectsSection extends ConsumerWidget {
       children: projects.map((project) {
         final projectId = project.id;
         final projectRoute = '/projects/$projectId';
-        final isActive = currentPath == projectRoute;
+        final isProjectActive = currentPath == projectRoute;
 
         return _ProjectItemTile(
           key: ValueKey(projectId),
           project: project,
           route: projectRoute,
-          isActive: isActive,
+          isActive: isProjectActive,
           hoveredKey: hoveredKey,
           onHoverChanged: onHoverChanged,
         );

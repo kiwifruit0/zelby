@@ -4,13 +4,12 @@ import 'package:go_router/go_router.dart';
 
 import 'screens/calendar/daily_calendar_screen.dart';
 import 'screens/calendar/monthly_calendar_screen.dart';
+import 'screens/calendar/upcoming_calendar_screen.dart';
 import 'screens/calendar/weekly_calendar_screen.dart';
-import 'screens/deadlines/deadlines_screen.dart';
-import 'screens/events/events_screen.dart';
+import 'screens/events_deadlines/events_deadlines_screen.dart';
 import 'screens/inbox/inbox_screen.dart';
 import 'screens/projects/project_detail_screen.dart';
 import 'screens/projects/projects_screen.dart';
-import 'screens/schedule/schedule_screen.dart';
 import 'screens/shell/app_shell.dart';
 import 'screens/today/today_screen.dart';
 import 'theme/app_theme.dart';
@@ -33,19 +32,9 @@ final GoRouter _router = GoRouter(
               _noTransitionPage(state, const InboxScreen()),
         ),
         GoRoute(
-          path: '/schedule',
+          path: '/events-deadlines',
           pageBuilder: (context, state) =>
-              _noTransitionPage(state, const ScheduleScreen()),
-        ),
-        GoRoute(
-          path: '/events',
-          pageBuilder: (context, state) =>
-              _noTransitionPage(state, const EventsScreen()),
-        ),
-        GoRoute(
-          path: '/deadlines',
-          pageBuilder: (context, state) =>
-              _noTransitionPage(state, const DeadlinesScreen()),
+              _noTransitionPage(state, const EventsDeadlinesScreen()),
         ),
         GoRoute(
           path: '/search',
@@ -70,6 +59,11 @@ final GoRouter _router = GoRouter(
           path: '/calendar/monthly',
           pageBuilder: (context, state) =>
               _noTransitionPage(state, const MonthlyCalendarScreen()),
+        ),
+        GoRoute(
+          path: '/calendar/upcoming',
+          pageBuilder: (context, state) =>
+              _noTransitionPage(state, const UpcomingCalendarScreen()),
         ),
         GoRoute(
           path: '/projects',

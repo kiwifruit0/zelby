@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../theme/app_theme.dart';
 
-enum CalendarView { daily, weekly, monthly }
+enum CalendarView { daily, weekly, monthly, upcoming }
 
 class CalendarViewSwitcher extends StatelessWidget {
   const CalendarViewSwitcher({super.key, required this.currentView});
@@ -35,6 +35,11 @@ class CalendarViewSwitcher extends StatelessWidget {
             label: 'Monthly',
             route: '/calendar/monthly',
             isActive: currentView == CalendarView.monthly,
+          ),
+          _ViewButton(
+            label: 'Upcoming',
+            route: '/calendar/upcoming',
+            isActive: currentView == CalendarView.upcoming,
           ),
         ],
       ),

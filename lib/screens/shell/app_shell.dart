@@ -24,13 +24,11 @@ class _AppShellState extends State<AppShell> {
 
   int _bottomIndexForPath(String path) {
     if (path.startsWith('/inbox')) return 0;
-    if (path.startsWith('/events')) return 1;
-    if (path.startsWith('/deadlines')) return 2;
-    if (path.startsWith('/today')) return 3;
-    if (path.startsWith('/schedule')) return 4;
-    if (path.startsWith('/calendar')) return 5;
-    if (path.startsWith('/projects')) return 6;
-    if (path.startsWith('/search')) return 7;
+    if (path.startsWith('/today')) return 1;
+    if (path.startsWith('/calendar')) return 2;
+    if (path.startsWith('/events-deadlines')) return 3;
+    if (path.startsWith('/projects')) return 4;
+    if (path.startsWith('/search')) return 5;
     return 0;
   }
 
@@ -39,18 +37,14 @@ class _AppShellState extends State<AppShell> {
       case 0:
         context.go('/inbox');
       case 1:
-        context.go('/events');
-      case 2:
-        context.go('/deadlines');
-      case 3:
         context.go('/today');
-      case 4:
-        context.go('/schedule');
-      case 5:
+      case 2:
         context.go('/calendar');
-      case 6:
+      case 3:
+        context.go('/events-deadlines');
+      case 4:
         context.go('/projects');
-      case 7:
+      case 5:
         context.go('/search');
     }
   }
@@ -93,24 +87,16 @@ class _AppShellState extends State<AppShell> {
             label: 'Inbox',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.event_outlined),
-            label: 'Events',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.flag_outlined),
-            label: 'Deadlines',
-          ),
-          BottomNavigationBarItem(
             icon: Icon(Icons.today_outlined),
             label: 'Today',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.schedule_outlined),
-            label: 'Schedule',
-          ),
-          BottomNavigationBarItem(
             icon: Icon(Icons.calendar_today_outlined),
             label: 'Calendar',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.access_time),
+            label: 'E & D',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.folder_outlined),

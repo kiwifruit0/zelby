@@ -1,11 +1,5 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import '../database/daos/deadlines_dao.dart';
-import '../database/daos/events_dao.dart';
-import '../database/daos/inbox_dao.dart';
-import '../database/daos/projects_dao.dart';
-import '../database/daos/scheduled_tasks_dao.dart';
-import '../database/daos/today_dao.dart';
 import 'database_provider.dart';
 
 part 'sidebar_counts_provider.g.dart';
@@ -31,7 +25,6 @@ Stream<SidebarCounts> sidebarCounts(Ref ref) {
   final db = ref.watch(appDatabaseProvider);
   final now = DateTime.now();
   final today = DateTime(now.year, now.month, now.day);
-  final tomorrow = today.add(const Duration(days: 1));
 
   final inboxStream = db.inboxDao.watchInboxTasks();
   final todayStream = db.todayDao.watchTodayActiveItems(today);
