@@ -42,6 +42,8 @@ class _AppSidebarState extends State<AppSidebar> {
       return switch (event.logicalKey) {
         LogicalKeyboardKey.keyT => _navigateTo('/today'),
         LogicalKeyboardKey.keyI => _navigateTo('/inbox'),
+        LogicalKeyboardKey.keyE => _navigateTo('/events'),
+        LogicalKeyboardKey.keyD => _navigateTo('/deadlines'),
         LogicalKeyboardKey.keyC => _navigateTo('/calendar'),
         LogicalKeyboardKey.keyP => _navigateTo('/projects'),
         _ => KeyEventResult.ignored,
@@ -122,6 +124,24 @@ class _AppSidebarState extends State<AppSidebar> {
                   onHoverChanged: (hovered) =>
                       _setHoveredRoute('/inbox', hovered),
                   onTap: () => context.go('/inbox'),
+                ),
+                _NavItemTile(
+                  icon: Icons.event_outlined,
+                  label: 'Events',
+                  isActive: currentPath.startsWith('/events'),
+                  isHovered: _hoveredRoute == '/events',
+                  onHoverChanged: (hovered) =>
+                      _setHoveredRoute('/events', hovered),
+                  onTap: () => context.go('/events'),
+                ),
+                _NavItemTile(
+                  icon: Icons.flag_outlined,
+                  label: 'Deadlines',
+                  isActive: currentPath.startsWith('/deadlines'),
+                  isHovered: _hoveredRoute == '/deadlines',
+                  onHoverChanged: (hovered) =>
+                      _setHoveredRoute('/deadlines', hovered),
+                  onTap: () => context.go('/deadlines'),
                 ),
                 _NavItemTile(
                   icon: Icons.today_outlined,

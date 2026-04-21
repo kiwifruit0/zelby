@@ -24,11 +24,13 @@ class _AppShellState extends State<AppShell> {
 
   int _bottomIndexForPath(String path) {
     if (path.startsWith('/inbox')) return 0;
-    if (path.startsWith('/today')) return 1;
-    if (path.startsWith('/schedule')) return 2;
-    if (path.startsWith('/calendar')) return 3;
-    if (path.startsWith('/projects')) return 4;
-    if (path.startsWith('/search')) return 5;
+    if (path.startsWith('/events')) return 1;
+    if (path.startsWith('/deadlines')) return 2;
+    if (path.startsWith('/today')) return 3;
+    if (path.startsWith('/schedule')) return 4;
+    if (path.startsWith('/calendar')) return 5;
+    if (path.startsWith('/projects')) return 6;
+    if (path.startsWith('/search')) return 7;
     return 0;
   }
 
@@ -37,14 +39,18 @@ class _AppShellState extends State<AppShell> {
       case 0:
         context.go('/inbox');
       case 1:
-        context.go('/today');
+        context.go('/events');
       case 2:
-        context.go('/schedule');
+        context.go('/deadlines');
       case 3:
-        context.go('/calendar');
+        context.go('/today');
       case 4:
-        context.go('/projects');
+        context.go('/schedule');
       case 5:
+        context.go('/calendar');
+      case 6:
+        context.go('/projects');
+      case 7:
         context.go('/search');
     }
   }
@@ -85,6 +91,14 @@ class _AppShellState extends State<AppShell> {
           BottomNavigationBarItem(
             icon: Icon(Icons.inbox_outlined),
             label: 'Inbox',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.event_outlined),
+            label: 'Events',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.flag_outlined),
+            label: 'Deadlines',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.today_outlined),
