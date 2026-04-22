@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/database_provider.dart';
 import '../../providers/today_provider.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/smooth_scroll.dart';
 
 class TodayScreen extends ConsumerStatefulWidget {
   const TodayScreen({super.key});
@@ -94,7 +95,7 @@ class _TodayContentState extends ConsumerState<_TodayContent> {
     final countLabel =
         '${active.length} ${active.length == 1 ? 'task' : 'tasks'}';
 
-    return ListView(
+    return SmoothListView(
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.md,
         AppSpacing.xl,
@@ -470,7 +471,7 @@ class _ShimmerList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
+    return SmoothListView.builder(
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.md,
         AppSpacing.lg,

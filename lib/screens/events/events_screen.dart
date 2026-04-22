@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/database_provider.dart';
 import '../../providers/events_provider.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/smooth_scroll.dart';
 
 class EventsScreen extends ConsumerStatefulWidget {
   const EventsScreen({super.key});
@@ -90,7 +91,7 @@ class _EventListState extends ConsumerState<_EventList> {
     final events = widget.events;
     final itemCount = events.isEmpty ? 2 : events.length + 1;
 
-    return ListView.builder(
+    return SmoothListView.builder(
       padding: EdgeInsets.zero,
       itemCount: itemCount,
       itemBuilder: (context, index) {
@@ -496,7 +497,7 @@ class _ShimmerList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
+    return SmoothListView.builder(
       padding: EdgeInsets.zero,
       itemCount: 4,
       itemBuilder: (context, _) => const _ShimmerRow(),

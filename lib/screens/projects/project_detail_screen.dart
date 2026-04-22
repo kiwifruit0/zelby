@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../providers/database_provider.dart';
 import '../../providers/projects_provider.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/smooth_scroll.dart';
 
 // Item types that live inside projects.
 const _kGroupOrder = [
@@ -111,7 +112,7 @@ class _ProjectDetailContent extends StatelessWidget {
           onBack: () => context.go('/projects'),
         ),
         Expanded(
-          child: ListView(
+          child: SmoothListView(
             padding: EdgeInsets.zero,
             children: [
               for (final type in _kGroupOrder)
@@ -160,12 +161,7 @@ class _ProjectHeading extends StatelessWidget {
             ),
           ),
           const SizedBox(width: AppSpacing.xs),
-          Expanded(
-            child: Text(
-              title,
-              style: AppTextStyles.pageTitle,
-            ),
-          ),
+          Expanded(child: Text(title, style: AppTextStyles.pageTitle)),
         ],
       ),
     );

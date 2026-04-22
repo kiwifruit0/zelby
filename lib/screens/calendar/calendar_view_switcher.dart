@@ -14,9 +14,9 @@ class CalendarViewSwitcher extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.sidebarBackground,
+        color: AppColors.background,
         border: Border.all(color: AppColors.divider),
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -65,14 +65,14 @@ class _ViewButton extends StatelessWidget {
       onTap: isActive ? null : () => context.go(route),
       child: Container(
         padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.sm,
+          horizontal: AppSpacing.md,
           vertical: AppSpacing.xs,
         ),
         decoration: BoxDecoration(
           color: isActive
               ? AppColors.accent.withValues(alpha: 0.18)
               : Colors.transparent,
-          borderRadius: BorderRadius.circular(5),
+          borderRadius: BorderRadius.circular(20),
         ),
         child: Text(
           label,

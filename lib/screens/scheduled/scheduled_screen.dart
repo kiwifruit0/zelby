@@ -6,6 +6,7 @@ import '../../providers/database_provider.dart';
 import '../../providers/scheduled_tasks_provider.dart';
 import '../../providers/selected_date_provider.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/smooth_scroll.dart';
 
 class ScheduledScreen extends ConsumerWidget {
   const ScheduledScreen({super.key});
@@ -29,7 +30,8 @@ class ScheduledScreen extends ConsumerWidget {
                 textAlign: TextAlign.center,
               ),
             ),
-            data: (tasks) => _TaskList(tasks: tasks, selectedDate: selectedDate),
+            data: (tasks) =>
+                _TaskList(tasks: tasks, selectedDate: selectedDate),
           ),
         ),
       ],
@@ -45,12 +47,28 @@ class _DateHeader extends ConsumerWidget {
   final DateTime date;
 
   static const _months = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December',
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
   ];
 
   static const _weekdays = [
-    'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday',
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
+    'Sunday',
   ];
 
   @override
@@ -72,20 +90,23 @@ class _DateHeader extends ConsumerWidget {
       child: Row(
         children: [
           Expanded(
-            child: Text(label, style: AppTextStyles.itemTitle.copyWith(
-              fontWeight: FontWeight.w600,
-            )),
+            child: Text(
+              label,
+              style: AppTextStyles.itemTitle.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
           _ArrowButton(
             icon: Icons.chevron_left,
-            onTap: () => ref.read(selectedDateProvider.notifier).state =
-                date.subtract(const Duration(days: 1)),
+            onTap: () => ref.read(selectedDateProvider.notifier).state = date
+                .subtract(const Duration(days: 1)),
           ),
           const SizedBox(width: 2),
           _ArrowButton(
             icon: Icons.chevron_right,
-            onTap: () => ref.read(selectedDateProvider.notifier).state =
-                date.add(const Duration(days: 1)),
+            onTap: () => ref.read(selectedDateProvider.notifier).state = date
+                .add(const Duration(days: 1)),
           ),
         ],
       ),
@@ -160,7 +181,7 @@ class _TaskListState extends ConsumerState<_TaskList> {
     final tasks = widget.tasks;
     final itemCount = tasks.isEmpty ? 2 : tasks.length + 1;
 
-    return ListView.builder(
+    return SmoothListView.builder(
       padding: EdgeInsets.zero,
       itemCount: itemCount,
       itemBuilder: (context, index) {
@@ -183,9 +204,8 @@ class _TaskListState extends ConsumerState<_TaskList> {
         return _TaskRow(
           task: task,
           hovered: _hoveredId == task.item.id,
-          onHoverChanged: (on) => setState(
-            () => _hoveredId = on ? task.item.id : null,
-          ),
+          onHoverChanged: (on) =>
+              setState(() => _hoveredId = on ? task.item.id : null),
           onComplete: () => _complete(task.item.id),
         );
       },
@@ -283,10 +303,7 @@ class _TaskRow extends StatelessWidget {
 // ── Capture row ──────────────────────────────────────────────────────────────
 
 class _CaptureRow extends StatefulWidget {
-  const _CaptureRow({
-    required this.initialDate,
-    required this.onSubmit,
-  });
+  const _CaptureRow({required this.initialDate, required this.onSubmit});
 
   final DateTime initialDate;
   final void Function(String title, DateTime date) onSubmit;
@@ -523,7 +540,7 @@ class _ShimmerList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
+    return SmoothListView.builder(
       padding: EdgeInsets.zero,
       itemCount: 4,
       itemBuilder: (context, _) => const _ShimmerRow(),

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/database_provider.dart';
 import '../../providers/schedule_provider.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/smooth_scroll.dart';
 
 class ScheduleScreen extends ConsumerStatefulWidget {
   const ScheduleScreen({super.key});
@@ -14,7 +15,7 @@ class ScheduleScreen extends ConsumerStatefulWidget {
 
 class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
   static const _daysAhead = 30;
-  final ScrollController _scrollController = ScrollController();
+  final SmoothScrollController _scrollController = SmoothScrollController();
   final Map<int, GlobalKey> _dayKeys = {};
 
   late List<DateTime> _dates;
@@ -31,7 +32,12 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
 
     _scrollController.addListener(_onScroll);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _scrollController.jumpTo(0);
+      if (!_scrollController.hasClients) return;
+      _scrollController.animateTo(
+        0,
+        duration: const Duration(milliseconds: 140),
+        curve: Curves.easeOutCubic,
+      );
     });
   }
 
@@ -128,7 +134,7 @@ class _DatePickerBar extends StatelessWidget {
         color: AppColors.background,
         border: Border(bottom: BorderSide(color: AppColors.divider)),
       ),
-      child: ListView.builder(
+      child: SmoothListView.builder(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
         itemCount: dates.length,
@@ -205,7 +211,9 @@ class _DateChipState extends State<_DateChip> {
                 weekday,
                 style: TextStyle(
                   fontSize: 11,
-                  color: widget.isHighlighted ? AppColors.accent : AppColors.muted,
+                  color: widget.isHighlighted
+                      ? AppColors.accent
+                      : AppColors.muted,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -247,19 +255,25 @@ class _ScheduleList extends StatelessWidget {
 
     for (int i = 0; i < dates.length; i++) {
       final date = dates[i];
-      final scheduleDay = days.where((d) =>
-          d.date.year == date.year &&
-          d.date.month == date.month &&
-          d.date.day == date.day).firstOrNull;
+      final scheduleDay = days
+          .where(
+            (d) =>
+                d.date.year == date.year &&
+                d.date.month == date.month &&
+                d.date.day == date.day,
+          )
+          .firstOrNull;
 
-      items.add(_DaySection(
-        key: GlobalKey(),
-        date: date,
-        items: scheduleDay?.items ?? [],
-      ));
+      items.add(
+        _DaySection(
+          key: GlobalKey(),
+          date: date,
+          items: scheduleDay?.items ?? [],
+        ),
+      );
     }
 
-    return ListView.builder(
+    return SmoothListView.builder(
       controller: scrollController,
       padding: EdgeInsets.zero,
       itemCount: items.length,
@@ -276,22 +290,34 @@ class _ScheduleList extends StatelessWidget {
 }
 
 class _DaySection extends ConsumerWidget {
-  const _DaySection({
-    super.key,
-    required this.date,
-    required this.items,
-  });
+  const _DaySection({super.key, required this.date, required this.items});
 
   final DateTime date;
   final List<ScheduleItem> items;
 
   static const _months = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December',
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
   ];
 
   static const _weekdays = [
-    'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday',
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
+    'Sunday',
   ];
 
   @override
@@ -322,7 +348,10 @@ class _DaySection extends ConsumerWidget {
               if (isToday) ...[
                 const SizedBox(width: AppSpacing.sm),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.accent,
                     borderRadius: BorderRadius.circular(4),
@@ -517,7 +546,9 @@ class _ItemRowState extends ConsumerState<_ItemRow> {
                   padding: const EdgeInsets.only(top: 2),
                   child: Text(
                     widget.timeLabel,
-                    style: AppTextStyles.itemMeta.copyWith(color: widget.timeColor),
+                    style: AppTextStyles.itemMeta.copyWith(
+                      color: widget.timeColor,
+                    ),
                   ),
                 ),
               ],
@@ -568,7 +599,7 @@ class _ShimmerList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
+    return SmoothListView.builder(
       padding: EdgeInsets.zero,
       itemCount: 10,
       itemBuilder: (context, index) => const _ShimmerRow(),

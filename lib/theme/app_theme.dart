@@ -7,7 +7,7 @@ class AppColors {
   static const Color sidebarBackground = Color(0xFFFAFAFA);
   static const Color primary = Color(0xFF202020);
   static const Color muted = Color(0xFF888888);
-  static const Color accent = Color(0xFFE84C3D);
+  static const Color accent = Color(0xFFA692F5);
   static const Color divider = Color(0xFFEEEEEE);
   static const Color hoverBackground = Color(0xFFF0F0F0);
 }

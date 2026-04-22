@@ -7,6 +7,7 @@ import '../../providers/events_provider.dart';
 import '../../providers/scheduled_tasks_provider.dart';
 import '../../providers/selected_date_provider.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/smooth_scroll.dart';
 import 'calendar_view_switcher.dart';
 
 const _kDayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -347,7 +348,7 @@ class _DayColumn extends StatelessWidget {
         Expanded(
           child: items.isEmpty
               ? const SizedBox.shrink()
-              : SingleChildScrollView(
+              : SmoothSingleChildScrollView(
                   padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,

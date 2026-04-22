@@ -6,6 +6,7 @@ import '../../database/daos/inbox_dao.dart';
 import '../../providers/database_provider.dart';
 import '../../providers/inbox_provider.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/smooth_scroll.dart';
 
 class InboxScreen extends ConsumerWidget {
   const InboxScreen({super.key});
@@ -53,7 +54,7 @@ class _TaskList extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return ListView.builder(
+    return SmoothListView.builder(
       padding: EdgeInsets.zero,
       itemCount: tasks.isEmpty ? 2 : tasks.length + 1,
       itemBuilder: (context, index) {
@@ -344,7 +345,7 @@ class _ShimmerList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
+    return SmoothListView.builder(
       padding: EdgeInsets.zero,
       itemCount: 5,
       itemBuilder: (_, i) => const _ShimmerRow(),

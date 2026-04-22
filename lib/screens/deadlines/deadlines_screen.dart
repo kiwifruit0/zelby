@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/database_provider.dart';
 import '../../providers/deadlines_provider.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/smooth_scroll.dart';
 
 class DeadlinesScreen extends ConsumerStatefulWidget {
   const DeadlinesScreen({super.key});
@@ -97,7 +98,7 @@ class _DeadlineListState extends ConsumerState<_DeadlineList> {
     final deadlines = widget.deadlines;
     final itemCount = deadlines.isEmpty ? 2 : deadlines.length + 1;
 
-    return ListView.builder(
+    return SmoothListView.builder(
       padding: EdgeInsets.zero,
       itemCount: itemCount,
       itemBuilder: (context, index) {
@@ -416,7 +417,7 @@ class _ShimmerList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
+    return SmoothListView.builder(
       padding: EdgeInsets.zero,
       itemCount: 4,
       itemBuilder: (context, _) => const _ShimmerRow(),

@@ -7,6 +7,7 @@ import '../../providers/inbox_provider.dart';
 import '../../providers/scheduled_tasks_provider.dart';
 import '../../providers/selected_date_provider.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/smooth_scroll.dart';
 import 'calendar_view_switcher.dart';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -160,14 +161,14 @@ class _TimelinePanel extends ConsumerStatefulWidget {
 }
 
 class _TimelinePanelState extends ConsumerState<_TimelinePanel> {
-  late final ScrollController _scrollController;
+  late final SmoothScrollController _scrollController;
   // Parent-owned hover key for the "Unscheduled" section rows.
   int? _hoveredUntimedId;
 
   @override
   void initState() {
     super.initState();
-    _scrollController = ScrollController();
+    _scrollController = SmoothScrollController();
     WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToAnchor());
   }
 
@@ -178,7 +179,7 @@ class _TimelinePanelState extends ConsumerState<_TimelinePanel> {
   }
 
   /// Scroll to ~1 hour before now if today, otherwise 8 am.
-  void _scrollToAnchor() {
+  Future<void> _scrollToAnchor() async {
     if (!_scrollController.hasClients) return;
     final now = DateTime.now();
     final sel = ref.read(selectedDateProvider);
@@ -189,7 +190,13 @@ class _TimelinePanelState extends ConsumerState<_TimelinePanel> {
       0.0,
       _scrollController.position.maxScrollExtent,
     );
-    _scrollController.jumpTo(offset);
+    final distance = (_scrollController.offset - offset).abs();
+    if (distance < 1) return;
+    await _scrollController.animateTo(
+      offset,
+      duration: Duration(milliseconds: distance.clamp(140.0, 260.0).round()),
+      curve: Curves.easeOutCubic,
+    );
   }
 
   Future<void> _onDrop(_TaskDragData data, int hour) async {
@@ -230,7 +237,7 @@ class _TimelinePanelState extends ConsumerState<_TimelinePanel> {
       }
     }
 
-    return SingleChildScrollView(
+    return SmoothSingleChildScrollView(
       controller: _scrollController,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -560,7 +567,7 @@ class _SidebarPanelState extends ConsumerState<_SidebarPanel> {
           child: Text('INBOX', style: AppTextStyles.sectionHeader),
         ),
         Expanded(
-          child: ListView.builder(
+          child: SmoothListView.builder(
             padding: EdgeInsets.zero,
             itemCount: tasks.length + 1,
             itemBuilder: (context, index) {

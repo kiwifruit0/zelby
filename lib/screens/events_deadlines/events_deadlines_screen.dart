@@ -6,6 +6,7 @@ import '../../providers/database_provider.dart';
 import '../../providers/deadlines_provider.dart';
 import '../../providers/events_provider.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/smooth_scroll.dart';
 
 enum _Tab { events, deadlines }
 
@@ -57,10 +58,7 @@ class _EventsDeadlinesScreenState extends ConsumerState<EventsDeadlinesScreen> {
 }
 
 class _TabBar extends StatelessWidget {
-  const _TabBar({
-    required this.selectedTab,
-    required this.onTabChanged,
-  });
+  const _TabBar({required this.selectedTab, required this.onTabChanged});
 
   final _Tab selectedTab;
   final void Function(_Tab) onTabChanged;
@@ -127,8 +125,8 @@ class _TabButtonState extends State<_TabButton> {
             color: widget.isActive
                 ? AppColors.accent.withValues(alpha: 0.12)
                 : _hovered
-                    ? AppColors.hoverBackground
-                    : Colors.transparent,
+                ? AppColors.hoverBackground
+                : Colors.transparent,
             borderRadius: BorderRadius.circular(6),
           ),
           child: Text(
@@ -191,7 +189,10 @@ class _EventListState extends ConsumerState<_EventList> {
   int? _hoveredId;
 
   Future<void> _insert(String title, DateTime start, DateTime end) async {
-    await ref.read(appDatabaseProvider).eventsDao.insertEvent(title, start, end);
+    await ref
+        .read(appDatabaseProvider)
+        .eventsDao
+        .insertEvent(title, start, end);
   }
 
   @override
@@ -199,12 +200,14 @@ class _EventListState extends ConsumerState<_EventList> {
     final events = widget.events;
     final itemCount = events.isEmpty ? 2 : events.length + 1;
 
-    return ListView.builder(
+    return SmoothListView.builder(
       padding: EdgeInsets.zero,
       itemCount: itemCount,
       itemBuilder: (context, index) {
         if (events.isEmpty) {
-          if (index == 0) return const _EmptyState(message: 'No upcoming events');
+          if (index == 0) {
+            return const _EmptyState(message: 'No upcoming events');
+          }
           return _EventCaptureRow(onSubmit: _insert);
         }
 
@@ -249,10 +252,10 @@ class _EventRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final happening = _isHappening();
-    final startLabel =
-        event.startDate != null ? _formatDate(event.startDate!) : '?';
-    final endLabel =
-        event.endDate != null ? _formatDate(event.endDate!) : '?';
+    final startLabel = event.startDate != null
+        ? _formatDate(event.startDate!)
+        : '?';
+    final endLabel = event.endDate != null ? _formatDate(event.endDate!) : '?';
     final dateRange = '$startLabel → $endLabel';
 
     return MouseRegion(
@@ -410,14 +413,14 @@ class _EventCaptureRowState extends State<_EventCaptureRow> {
   }
 
   Widget _datePickerTheme(BuildContext context, Widget? child) => Theme(
-        data: Theme.of(context).copyWith(
-          colorScheme: Theme.of(context).colorScheme.copyWith(
-                primary: AppColors.accent,
-                onPrimary: AppColors.primary,
-              ),
-        ),
-        child: child!,
-      );
+    data: Theme.of(context).copyWith(
+      colorScheme: Theme.of(context).colorScheme.copyWith(
+        primary: AppColors.accent,
+        onPrimary: AppColors.primary,
+      ),
+    ),
+    child: child!,
+  );
 
   String _fmt(DateTime dt) =>
       '${dt.month}/${dt.day}/${dt.year.toString().substring(2)}';
@@ -611,7 +614,10 @@ class _DeadlineListState extends ConsumerState<_DeadlineList> {
   int? _hoveredId;
 
   Future<void> _insert(String title, DateTime date) async {
-    await ref.read(appDatabaseProvider).deadlinesDao.insertDeadline(title, date);
+    await ref
+        .read(appDatabaseProvider)
+        .deadlinesDao
+        .insertDeadline(title, date);
   }
 
   Future<void> _complete(int id) async {
@@ -623,7 +629,7 @@ class _DeadlineListState extends ConsumerState<_DeadlineList> {
     final deadlines = widget.deadlines;
     final itemCount = deadlines.isEmpty ? 2 : deadlines.length + 1;
 
-    return ListView.builder(
+    return SmoothListView.builder(
       padding: EdgeInsets.zero,
       itemCount: itemCount,
       itemBuilder: (context, index) {
@@ -678,8 +684,9 @@ class _DeadlineRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dateColor = _urgencyColor(deadline.endDate);
-    final dateLabel =
-        deadline.endDate != null ? _formatDate(deadline.endDate!) : '—';
+    final dateLabel = deadline.endDate != null
+        ? _formatDate(deadline.endDate!)
+        : '—';
 
     return MouseRegion(
       onEnter: (_) => onHoverChanged(true),
@@ -789,9 +796,9 @@ class _DeadlineCaptureRowState extends State<_DeadlineCaptureRow> {
       builder: (context, child) => Theme(
         data: Theme.of(context).copyWith(
           colorScheme: Theme.of(context).colorScheme.copyWith(
-                primary: AppColors.accent,
-                onPrimary: AppColors.primary,
-              ),
+            primary: AppColors.accent,
+            onPrimary: AppColors.primary,
+          ),
         ),
         child: child!,
       ),
@@ -936,9 +943,7 @@ class _EmptyState extends StatelessWidget {
         horizontal: AppSpacing.md,
         vertical: AppSpacing.lg,
       ),
-      child: Center(
-        child: Text(message, style: AppTextStyles.bodyMuted),
-      ),
+      child: Center(child: Text(message, style: AppTextStyles.bodyMuted)),
     );
   }
 }
@@ -948,7 +953,7 @@ class _ShimmerList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
+    return SmoothListView.builder(
       padding: EdgeInsets.zero,
       itemCount: 4,
       itemBuilder: (context, index) => const _ShimmerRow(),

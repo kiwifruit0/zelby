@@ -13,6 +13,7 @@ import 'screens/projects/projects_screen.dart';
 import 'screens/shell/app_shell.dart';
 import 'screens/today/today_screen.dart';
 import 'theme/app_theme.dart';
+import 'widgets/smooth_scroll.dart';
 
 final GoRouter _router = GoRouter(
   initialLocation: '/inbox',
@@ -113,7 +114,7 @@ class _PlaceholderPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
+    return SmoothListView(
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.md,
         AppSpacing.xl,

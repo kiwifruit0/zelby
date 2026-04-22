@@ -7,6 +7,7 @@ import '../../providers/database_provider.dart';
 import '../../providers/projects_provider.dart';
 import '../../providers/inbox_provider.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/smooth_scroll.dart';
 
 class ProjectsScreen extends ConsumerWidget {
   const ProjectsScreen({super.key});
@@ -68,7 +69,7 @@ class _ProjectListState extends ConsumerState<_ProjectList> {
     final projects = widget.projects;
     final itemCount = projects.isEmpty ? 2 : projects.length + 1;
 
-    return ListView.builder(
+    return SmoothListView.builder(
       padding: EdgeInsets.zero,
       itemCount: itemCount,
       itemBuilder: (context, index) {
@@ -338,7 +339,7 @@ class _ShimmerList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
+    return SmoothListView.builder(
       padding: EdgeInsets.zero,
       itemCount: 4,
       itemBuilder: (context, _) => const _ShimmerRow(),
