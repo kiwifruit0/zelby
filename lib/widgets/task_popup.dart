@@ -71,11 +71,13 @@ class TaskDraft {
     required this.title,
     required this.destination,
     required this.date,
+    this.notes,
   });
 
   final String title;
   final DateTime? date;
   final TaskDestinationSelection destination;
+  final String? notes;
 }
 
 class TaskAddPromptButton extends StatefulWidget {
@@ -178,6 +180,7 @@ Future<TaskDestinationSelection?> showTaskDestinationPickerDialog(
 Future<void> persistTaskDraft(db.AppDatabase database, TaskDraft draft) async {
   final taskId = await database.inboxDao.insertTask(
     draft.title,
+    notes: draft.notes,
     endDate: draft.date,
   );
 
@@ -218,6 +221,7 @@ class _AddTaskDialog extends ConsumerStatefulWidget {
 
 class _AddTaskDialogState extends ConsumerState<_AddTaskDialog> {
   final _titleController = TextEditingController();
+  final _notesController = TextEditingController();
   final _titleFocusNode = FocusNode();
   DateTime? _selectedDate;
   TaskDestinationSelection? _selectedDestination;
@@ -241,6 +245,7 @@ class _AddTaskDialogState extends ConsumerState<_AddTaskDialog> {
   @override
   void dispose() {
     _titleController.dispose();
+    _notesController.dispose();
     _titleFocusNode.dispose();
     super.dispose();
   }
@@ -267,11 +272,13 @@ class _AddTaskDialogState extends ConsumerState<_AddTaskDialog> {
   void _submit() {
     final title = _titleController.text.trim();
     if (title.isEmpty) return;
+    final notes = _notesController.text.trim();
     Navigator.of(context).pop(
       TaskDraft(
         title: title,
         date: _selectedDate,
         destination: _selectedDestination ?? const TaskDestinationSelection.inbox(),
+        notes: notes.isEmpty ? null : notes,
       ),
     );
   }
@@ -336,11 +343,19 @@ class _AddTaskDialogState extends ConsumerState<_AddTaskDialog> {
                         ),
                       ),
                       const SizedBox(height: AppSpacing.sm),
-                      Text(
-                        'Description',
-                        style: AppTextStyles.body.copyWith(
-                          color: AppColors.muted,
-                          fontSize: 18,
+                      TextField(
+                        controller: _notesController,
+                        style: AppTextStyles.body.copyWith(fontSize: 16),
+                        textInputAction: TextInputAction.done,
+                        decoration: const InputDecoration(
+                          hintText: 'Add description...',
+                          hintStyle: TextStyle(
+                            color: AppColors.muted,
+                            fontSize: 16,
+                          ),
+                          border: InputBorder.none,
+                          isDense: true,
+                          contentPadding: EdgeInsets.zero,
                         ),
                       ),
                       const SizedBox(height: AppSpacing.lg),
@@ -350,13 +365,17 @@ class _AddTaskDialogState extends ConsumerState<_AddTaskDialog> {
                         children: [
                           _ActionChip(
                             icon: Icons.calendar_today_outlined,
-                            label: _formatDate(
-                              _selectedDate ?? DateTime.now(),
-                            ),
-                            color: const Color(0xFF008A2E),
+                            label: _selectedDate == null
+                                ? 'Date'
+                                : _formatDate(_selectedDate!),
+                            color: _selectedDate == null
+                                ? AppColors.muted
+                                : const Color(0xFF008A2E),
                             onTap: _pickDate,
                             trailingIcon: Icons.close,
-                            trailingIconColor: Colors.black54,
+                            trailingIconColor: _selectedDate == null
+                                ? AppColors.muted
+                                : Colors.black54,
                             onTrailingTap: () => setState(() => _selectedDate = null),
                           ),
                         ],
@@ -406,7 +425,7 @@ class _AddTaskDialogState extends ConsumerState<_AddTaskDialog> {
   }
 }
 
-class _ActionChip extends StatelessWidget {
+class _ActionChip extends StatefulWidget {
   const _ActionChip({
     required this.icon,
     required this.label,
@@ -426,102 +445,61 @@ class _ActionChip extends StatelessWidget {
   final VoidCallback? onTrailingTap;
 
   @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        decoration: BoxDecoration(
-          border: Border.all(color: AppColors.divider),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 18, color: color),
-            const SizedBox(width: 10),
-            Text(
-              label,
-              style: AppTextStyles.itemTitle.copyWith(
-                color: color,
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            if (trailingIcon != null && onTrailingTap != null) ...[
-              const SizedBox(width: 10),
-              GestureDetector(
-                onTap: onTrailingTap,
-                child: Icon(
-                  trailingIcon,
-                  size: 18,
-                  color: trailingIconColor ?? color,
-                ),
-              ),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
+  State<_ActionChip> createState() => _ActionChipState();
 }
 
-class _DisabledActionChip extends StatelessWidget {
-  const _DisabledActionChip({
-    required this.icon,
-    required this.label,
-    this.showNewBadge = false,
-  });
-
-  final IconData icon;
-  final String label;
-  final bool showNewBadge;
+class _ActionChipState extends State<_ActionChip> {
+  bool _hovered = false;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      decoration: BoxDecoration(
-        border: Border.all(color: AppColors.divider),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 18, color: AppColors.muted),
-          const SizedBox(width: 10),
-          Text(
-            label,
-            style: AppTextStyles.itemTitle.copyWith(
-              color: AppColors.muted,
-              fontSize: 16,
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: _hovered ? AppColors.accent : AppColors.divider,
             ),
+            borderRadius: BorderRadius.circular(12),
           ),
-          if (showNewBadge) ...[
-            const SizedBox(width: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-              decoration: BoxDecoration(
-                color: AppColors.accent.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Text(
-                'NEW',
-                style: AppTextStyles.sectionHeader.copyWith(
-                  color: const Color(0xFF008A2E),
-                  letterSpacing: 0.8,
-                  fontWeight: FontWeight.w700,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(widget.icon, size: 18, color: widget.color),
+              const SizedBox(width: 10),
+              Text(
+                widget.label,
+                style: AppTextStyles.itemTitle.copyWith(
+                  color: widget.color,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
-            ),
-          ],
-        ],
+if (widget.trailingIcon != null && widget.onTrailingTap != null) ...[
+                const SizedBox(width: 10),
+                GestureDetector(
+                  onTap: widget.onTrailingTap,
+                  child: Icon(
+                    widget.trailingIcon,
+                    size: 18,
+                    color: widget.trailingIconColor ?? widget.color,
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
       ),
     );
   }
 }
 
-class _DestinationButton extends StatelessWidget {
+class _DestinationButton extends StatefulWidget {
   const _DestinationButton({
     required this.destination,
     required this.onTap,
@@ -531,19 +509,31 @@ class _DestinationButton extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
+  State<_DestinationButton> createState() => _DestinationButtonState();
+}
+
+class _DestinationButtonState extends State<_DestinationButton> {
+  bool _hovered = false;
+
+  @override
   Widget build(BuildContext context) {
     return MouseRegion(
       cursor: SystemMouseCursors.click,
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
-        onTap: onTap,
+        onTap: widget.onTap,
         child: Row(
           children: [
-            Icon(destination.icon, size: 20, color: AppColors.muted),
+            Icon(widget.destination.icon, size: 20, color: _hovered ? AppColors.accent : AppColors.muted),
             const SizedBox(width: 10),
-            Text(destination.label, style: AppTextStyles.itemTitle.copyWith(fontSize: 16)),
+            Text(widget.destination.label, style: AppTextStyles.itemTitle.copyWith(
+              fontSize: 16,
+              color: _hovered ? AppColors.accent : AppColors.primary,
+            )),
             const SizedBox(width: 4),
-            const Icon(Icons.arrow_drop_down, size: 20, color: AppColors.muted),
+            Icon(Icons.arrow_drop_down, size: 20, color: _hovered ? AppColors.accent : AppColors.muted),
           ],
         ),
       ),
