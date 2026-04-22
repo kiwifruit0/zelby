@@ -46,6 +46,24 @@ class _AppShellState extends ConsumerState<AppShell> {
     }
   }
 
+  Widget _wrapContent(Widget child, String path) {
+    final isFullWidth = path.startsWith('/calendar/daily') ||
+        path.startsWith('/calendar/weekly') ||
+        path.startsWith('/calendar/monthly') ||
+        path == '/calendar';
+
+    if (isFullWidth) {
+      return child;
+    }
+
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 860),
+        child: child,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final path = GoRouterState.of(context).uri.path;
@@ -85,7 +103,7 @@ class _AppShellState extends ConsumerState<AppShell> {
                       showToggle: true,
                     ),
                   ),
-                  Expanded(child: widget.child),
+                  Expanded(child: _wrapContent(widget.child, path)),
                 ],
               ),
               if (!showSidebar)
@@ -111,7 +129,7 @@ class _AppShellState extends ConsumerState<AppShell> {
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: AppColors.background,
-      body: SafeArea(bottom: false, child: widget.child),
+      body: SafeArea(bottom: false, child: _wrapContent(widget.child, path)),
       drawer: Drawer(
         child: AppSidebar(
           onSearchFocus: () => _searchFocusNode.requestFocus(),
