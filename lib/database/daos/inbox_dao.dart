@@ -1,12 +1,13 @@
 import 'package:drift/drift.dart';
 
 import '../database.dart';
+import '../tables/dependencies.dart';
 import '../tables/item_dates.dart';
 import '../tables/items.dart';
 
 part 'inbox_dao.g.dart';
 
-@DriftAccessor(tables: [Items, ItemDates])
+@DriftAccessor(tables: [Items, ItemDates, TaskDependencies])
 class InboxDao extends DatabaseAccessor<AppDatabase> with _$InboxDaoMixin {
   InboxDao(super.db);
 
@@ -103,5 +104,89 @@ class InboxDao extends DatabaseAccessor<AppDatabase> with _$InboxDaoMixin {
     }
 
     return (update(items)..where((tbl) => tbl.id.equals(id))).write(companion);
+  }
+
+  Future<Item?> getTaskById(int id) {
+    return (select(items)..where((tbl) => tbl.id.equals(id))).getSingleOrNull();
+  }
+
+  Future<ItemDate?> getItemDate(int itemId) {
+    return (select(itemDates)..where((tbl) => tbl.itemId.equals(itemId)))
+        .getSingleOrNull();
+  }
+
+  Future<void> setTaskDate(int itemId, {DateTime? startDate, DateTime? endDate}) {
+    return transaction(() async {
+      final existing = await getItemDate(itemId);
+      if (existing == null) {
+        if (startDate != null || endDate != null) {
+          await into(itemDates).insert(
+            ItemDatesCompanion.insert(
+              itemId: Value(itemId),
+              startDate:
+                  startDate == null ? const Value.absent() : Value(startDate),
+              endDate: endDate == null ? const Value.absent() : Value(endDate),
+            ),
+          );
+        }
+      } else {
+        await (update(itemDates)..where((tbl) => tbl.itemId.equals(itemId)))
+            .write(
+          ItemDatesCompanion(
+            startDate:
+                startDate == null ? const Value.absent() : Value(startDate),
+            endDate: endDate == null ? const Value.absent() : Value(endDate),
+          ),
+        );
+      }
+    });
+  }
+
+  Future<void> removeTaskDate(int itemId) {
+    return (delete(itemDates)..where((tbl) => tbl.itemId.equals(itemId))).go();
+  }
+
+  Future<List<Item>> getDependencies(int taskId) async {
+    final query = select(items).join([
+      innerJoin(
+        taskDependencies,
+        taskDependencies.dependsOnId.equalsExp(items.id),
+      ),
+    ])
+      ..where(taskDependencies.taskId.equals(taskId))
+      ..where(items.deletedAt.isNull());
+
+    final rows = await query.get();
+    return rows.map((row) => row.readTable(items)).toList();
+  }
+
+  Future<List<Item>> getDependents(int taskId) async {
+    final query = select(items).join([
+      innerJoin(
+        taskDependencies,
+        taskDependencies.taskId.equalsExp(items.id),
+      ),
+    ])
+      ..where(taskDependencies.dependsOnId.equals(taskId))
+      ..where(items.deletedAt.isNull());
+
+    final rows = await query.get();
+    return rows.map((row) => row.readTable(items)).toList();
+  }
+
+  Future<void> addDependency(int taskId, int dependsOnId) {
+    return into(taskDependencies).insert(
+      TaskDependenciesCompanion.insert(
+        taskId: taskId,
+        dependsOnId: dependsOnId,
+      ),
+    );
+  }
+
+  Future<void> removeDependency(int taskId, int dependsOnId) {
+    return (delete(taskDependencies)
+          ..where((tbl) => tbl.taskId.equals(taskId))
+          ..where((tbl) => tbl.dependsOnId.equals(dependsOnId)))
+        .go();
   }
 }

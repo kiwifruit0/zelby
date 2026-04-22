@@ -46,4 +46,4 @@ final class SidebarCountsProvider
   }
 }
 
-String _$sidebarCountsHash() => r'59bc61da15e935c261854a6b203763567899abc9';
+String _$sidebarCountsHash() => r'2da4cb6a9431ea84130de6cc32f46b617ee8bc61';

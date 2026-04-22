@@ -7,6 +7,7 @@ import '../../providers/scheduled_tasks_provider.dart';
 import '../../providers/selected_date_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/smooth_scroll.dart';
+import '../../widgets/task_detail_popup.dart';
 import '../../widgets/task_popup.dart';
 import 'calendar_view_switcher.dart';
 
@@ -471,40 +472,63 @@ class _TimeSlot extends StatelessWidget {
 
 // ── Scheduled task block (inside a time slot) ─────────────────────────────────
 
-class _ScheduledTaskBlock extends StatelessWidget {
+class _ScheduledTaskBlock extends StatefulWidget {
   const _ScheduledTaskBlock({required this.task});
 
   final ScheduledTaskWithDate task;
 
   @override
+  State<_ScheduledTaskBlock> createState() => _ScheduledTaskBlockState();
+}
+
+class _ScheduledTaskBlockState extends State<_ScheduledTaskBlock> {
+  bool _hovered = false;
+
+  Future<void> _openTaskDetail(BuildContext context) async {
+    await showTaskDetailDialog(
+      context,
+      TaskDetailParams(taskId: widget.task.item.id, taskIds: [widget.task.item.id]),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Draggable<_TaskDragData>(
       data: _TaskDragData(
-        taskId: task.item.id,
-        title: task.item.title,
+        taskId: widget.task.item.id,
+        title: widget.task.item.title,
         source: _DragSource.scheduled,
       ),
       dragAnchorStrategy: pointerDragAnchorStrategy,
-      feedback: _DragFeedback(title: task.item.title),
+      feedback: _DragFeedback(title: widget.task.item.title),
       childWhenDragging: Opacity(
         opacity: 0.35,
-        child: _ScheduledTaskBlockContent(task: task),
+        child: _ScheduledTaskBlockContent(task: widget.task, hovered: false),
       ),
-      child: _ScheduledTaskBlockContent(task: task),
+      child: MouseRegion(
+        onEnter: (_) => setState(() => _hovered = true),
+        onExit: (_) => setState(() => _hovered = false),
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onDoubleTap: () => _openTaskDetail(context),
+          child: _ScheduledTaskBlockContent(task: widget.task, hovered: _hovered),
+        ),
+      ),
     );
   }
 }
 
 class _ScheduledTaskBlockContent extends StatelessWidget {
-  const _ScheduledTaskBlockContent({required this.task});
+  const _ScheduledTaskBlockContent({required this.task, required this.hovered});
 
   final ScheduledTaskWithDate task;
+  final bool hovered;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(bottom: 2),
-      padding: const EdgeInsets.fromLTRB(8, 4, 8, 4),
+      padding: const EdgeInsets.fromLTRB(8, 4, 4, 4),
       decoration: BoxDecoration(
         color: AppColors.accent.withValues(alpha: 0.12),
         border: const Border(
@@ -515,15 +539,34 @@ class _ScheduledTaskBlockContent extends StatelessWidget {
           bottomRight: Radius.circular(3),
         ),
       ),
-      child: Text(
-        task.item.title,
-        style: const TextStyle(
-          fontSize: 12,
-          color: AppColors.primary,
-          height: 1.3,
-        ),
-        maxLines: 2,
-        overflow: TextOverflow.ellipsis,
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              task.item.title,
+              style: const TextStyle(
+                fontSize: 12,
+                color: AppColors.primary,
+                height: 1.3,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          if (hovered)
+            GestureDetector(
+              onTap: () {
+                showTaskDetailDialog(
+                  context,
+                  TaskDetailParams(taskId: task.item.id, taskIds: [task.item.id]),
+                );
+              },
+              child: const Padding(
+                padding: EdgeInsets.only(left: 4),
+                child: Icon(Icons.edit, size: 12, color: AppColors.muted),
+              ),
+            ),
+        ],
       ),
     );
   }

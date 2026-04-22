@@ -6,6 +6,7 @@ import '../../providers/database_provider.dart';
 import '../../providers/inbox_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/smooth_scroll.dart';
+import '../../widgets/task_detail_popup.dart';
 import '../../widgets/task_popup.dart';
 
 class InboxScreen extends ConsumerWidget {
@@ -72,6 +73,7 @@ class _TaskList extends ConsumerWidget {
         return _TaskRow(
           task: tasks[index],
           onComplete: () => _complete(ref, tasks[index].id),
+          onTap: () => _openTaskDetail(context, tasks, index),
         );
       },
     );
@@ -90,15 +92,28 @@ class _TaskList extends ConsumerWidget {
     if (draft == null) return;
     await persistTaskDraft(ref.read(appDatabaseProvider), draft);
   }
+
+  Future<void> _openTaskDetail(BuildContext context, List<Item> tasks, int index) async {
+    final taskIds = tasks.map((t) => t.id).toList();
+    await showTaskDetailDialog(
+      context,
+      TaskDetailParams(taskId: tasks[index].id, taskIds: taskIds),
+    );
+  }
 }
 
 // ── Individual task row ──────────────────────────────────────────────────────
 
 class _TaskRow extends StatefulWidget {
-  const _TaskRow({required this.task, required this.onComplete});
+  const _TaskRow({
+    required this.task,
+    required this.onComplete,
+    required this.onTap,
+  });
 
   final Item task;
   final VoidCallback onComplete;
+  final VoidCallback onTap;
 
   @override
   State<_TaskRow> createState() => _TaskRowState();
@@ -114,50 +129,52 @@ class _TaskRowState extends State<_TaskRow> {
         '${created.month}/${created.day}/${created.year.toString().substring(2)}';
 
     return MouseRegion(
+      cursor: SystemMouseCursors.click,
       onEnter: (_) => setState(() => _hovered = true),
       onExit: (_) => setState(() => _hovered = false),
-      child: Container(
-        color: _hovered ? AppColors.hoverBackground : AppColors.background,
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.md,
-          vertical: AppSpacing.sm,
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Hollow circle checkbox
-            GestureDetector(
-              onTap: widget.onComplete,
-              child: Container(
-                width: 18,
-                height: 18,
-                margin: const EdgeInsets.only(top: 1),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: AppColors.muted, width: 1.5),
-                  color: Colors.transparent,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: widget.onTap,
+        child: Container(
+          color: _hovered ? AppColors.hoverBackground : AppColors.background,
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.sm,
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              GestureDetector(
+                onTap: widget.onComplete,
+                child: Container(
+                  width: 18,
+                  height: 18,
+                  margin: const EdgeInsets.only(top: 1),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(color: AppColors.muted, width: 1.5),
+                    color: Colors.transparent,
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(width: AppSpacing.sm),
-            // Title + optional notes
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(widget.task.title, style: AppTextStyles.itemTitle),
-                  if (widget.task.notes != null &&
-                      widget.task.notes!.isNotEmpty) ...[
-                    const SizedBox(height: 2),
-                    Text(widget.task.notes!, style: AppTextStyles.itemMeta),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(widget.task.title, style: AppTextStyles.itemTitle),
+                    if (widget.task.notes != null &&
+                        widget.task.notes!.isNotEmpty) ...[
+                      const SizedBox(height: 2),
+                      Text(widget.task.notes!, style: AppTextStyles.itemMeta),
+                    ],
                   ],
-                ],
+                ),
               ),
-            ),
-            const SizedBox(width: AppSpacing.sm),
-            // Created date
-            Text(dateLabel, style: AppTextStyles.itemMeta),
-          ],
+              const SizedBox(width: AppSpacing.sm),
+              Text(dateLabel, style: AppTextStyles.itemMeta),
+            ],
+          ),
         ),
       ),
     );

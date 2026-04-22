@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 
 import '../database.dart';
+import '../tables/dependencies.dart';
 import '../tables/item_dates.dart';
 import '../tables/items.dart';
 
@@ -16,7 +17,7 @@ class EventWithDates {
   final ItemDate itemDate;
 }
 
-@DriftAccessor(tables: [Items, ItemDates])
+@DriftAccessor(tables: [Items, ItemDates, TaskDependencies])
 class EventsDao extends DatabaseAccessor<AppDatabase> with _$EventsDaoMixin {
   EventsDao(super.db);
 
@@ -190,5 +191,20 @@ class EventsDao extends DatabaseAccessor<AppDatabase> with _$EventsDaoMixin {
         updatedAt: Value(now),
       ),
     );
+  }
+
+  Future<List<Item>> getEventsForTask(int taskId) async {
+    final query = select(items).join([
+      innerJoin(
+        taskDependencies,
+        taskDependencies.dependsOnId.equalsExp(items.id),
+      ),
+    ])
+      ..where(taskDependencies.taskId.equals(taskId))
+      ..where(items.itemType.equals('event'))
+      ..where(items.deletedAt.isNull());
+
+    final rows = await query.get();
+    return rows.map((row) => row.readTable(items)).toList();
   }
 }

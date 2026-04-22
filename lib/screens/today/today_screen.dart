@@ -112,9 +112,9 @@ class _TodayContentState extends ConsumerState<_TodayContent> {
         const SizedBox(height: AppSpacing.md),
         Row(
           children: [
-            const Icon(
+            Icon(
               Icons.check_circle_outline,
-              size: 24,
+              size: AppTextStyles.body.copyWith().fontSize,
               color: AppColors.muted,
             ),
             const SizedBox(width: AppSpacing.sm),
@@ -271,6 +271,7 @@ class _LeadingCompletionIcon extends StatelessWidget {
 
   final TodayItem item;
   final VoidCallback? onTap;
+  final iconSize = 20.0;
 
   @override
   Widget build(BuildContext context) {
@@ -278,8 +279,8 @@ class _LeadingCompletionIcon extends StatelessWidget {
       return Tooltip(
         message: 'Events complete automatically',
         child: Container(
-          width: 24,
-          height: 24,
+          width: iconSize,
+          height: iconSize,
           margin: const EdgeInsets.only(top: 1),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(6),
@@ -292,8 +293,8 @@ class _LeadingCompletionIcon extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 24,
-        height: 24,
+        width: iconSize,
+        height: iconSize,
         margin: const EdgeInsets.only(top: 1),
         decoration: BoxDecoration(
           shape: BoxShape.circle,

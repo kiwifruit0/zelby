@@ -8,6 +8,7 @@ import '../../providers/scheduled_tasks_provider.dart';
 import '../../providers/selected_date_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/smooth_scroll.dart';
+import '../../widgets/task_detail_popup.dart';
 import 'calendar_view_switcher.dart';
 
 const _kDayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -42,11 +43,17 @@ Color _urgencyColor(DateTime? endDate) {
 enum _ItemKind { scheduledTask, event, deadline }
 
 class _CalItem {
-  const _CalItem({required this.title, required this.kind, this.endDate});
+  const _CalItem({
+    required this.title,
+    required this.kind,
+    this.endDate,
+    this.itemId,
+  });
 
   final String title;
   final _ItemKind kind;
   final DateTime? endDate;
+  final int? itemId;
 
   Color get color => switch (kind) {
     _ItemKind.scheduledTask => _kTaskColor,
@@ -131,6 +138,7 @@ class _WeeklyCalendarScreenState extends ConsumerState<WeeklyCalendarScreen> {
           title: t.item.title,
           kind: _ItemKind.scheduledTask,
           endDate: t.endDate,
+          itemId: t.item.id,
         ),
       );
     }
@@ -150,6 +158,7 @@ class _WeeklyCalendarScreenState extends ConsumerState<WeeklyCalendarScreen> {
               title: e.item.title,
               kind: _ItemKind.event,
               endDate: e.endDate,
+              itemId: e.item.id,
             ),
           );
         }
@@ -164,6 +173,7 @@ class _WeeklyCalendarScreenState extends ConsumerState<WeeklyCalendarScreen> {
           title: d.item.title,
           kind: _ItemKind.deadline,
           endDate: d.endDate,
+          itemId: d.item.id,
         ),
       );
     }
@@ -445,34 +455,62 @@ class _DayHeader extends StatelessWidget {
 
 // ── Item chip ─────────────────────────────────────────────────────────────────
 
-class _ItemChip extends StatelessWidget {
+class _ItemChip extends StatefulWidget {
   const _ItemChip({required this.item});
 
   final _CalItem item;
 
   @override
+  State<_ItemChip> createState() => _ItemChipState();
+}
+
+class _ItemChipState extends State<_ItemChip> {
+  bool _hovered = false;
+
+  Future<void> _openTaskDetail(BuildContext context) async {
+    if (widget.item.itemId == null) return;
+    await showTaskDetailDialog(
+      context,
+      TaskDetailParams(taskId: widget.item.itemId!, taskIds: [widget.item.itemId!]),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final color = item.color;
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-      padding: const EdgeInsets.fromLTRB(6, 4, 6, 4),
-      decoration: BoxDecoration(
-        border: Border(left: BorderSide(color: color, width: 2.5)),
-        color: color.withValues(alpha: 0.07),
-        borderRadius: const BorderRadius.only(
-          topRight: Radius.circular(3),
-          bottomRight: Radius.circular(3),
+    final color = widget.item.color;
+    final canOpen = widget.item.kind == _ItemKind.scheduledTask && widget.item.itemId != null;
+
+    return MouseRegion(
+      cursor: canOpen ? SystemMouseCursors.click : SystemMouseCursors.basic,
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: canOpen ? () => _openTaskDetail(context) : null,
+        child: Container(
+          margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+          padding: const EdgeInsets.fromLTRB(6, 4, 6, 4),
+          decoration: BoxDecoration(
+            border: Border(left: BorderSide(color: color, width: 2.5)),
+            color: _hovered
+                ? color.withValues(alpha: 0.15)
+                : color.withValues(alpha: 0.07),
+            borderRadius: const BorderRadius.only(
+              topRight: Radius.circular(3),
+              bottomRight: Radius.circular(3),
+            ),
+          ),
+          child: Text(
+            widget.item.title,
+            style: const TextStyle(
+              fontSize: 11,
+              color: AppColors.primary,
+              height: 1.3,
+            ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
         ),
-      ),
-      child: Text(
-        item.title,
-        style: const TextStyle(
-          fontSize: 11,
-          color: AppColors.primary,
-          height: 1.3,
-        ),
-        maxLines: 2,
-        overflow: TextOverflow.ellipsis,
       ),
     );
   }

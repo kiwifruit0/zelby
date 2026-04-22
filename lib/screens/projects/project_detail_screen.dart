@@ -7,6 +7,7 @@ import '../../providers/database_provider.dart';
 import '../../providers/projects_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/smooth_scroll.dart';
+import '../../widgets/task_detail_popup.dart';
 
 // Item types that live inside projects.
 const _kGroupOrder = [
@@ -75,7 +76,19 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
         projectId: widget.projectId,
         onComplete: _onComplete,
         onNavigateToProject: (id) => context.go('/projects/$id'),
+        onOpenTask: (id) => _openTaskDetail(context, data, id),
       ),
+    );
+  }
+
+  Future<void> _openTaskDetail(BuildContext context, ProjectWithItems data, int taskId) async {
+    final taskIds = data.items
+        .where((i) => i.itemType == 'unscheduled_task')
+        .map((i) => i.item.id)
+        .toList();
+    await showTaskDetailDialog(
+      context,
+      TaskDetailParams(taskId: taskId, taskIds: taskIds),
     );
   }
 }
@@ -88,12 +101,14 @@ class _ProjectDetailContent extends StatelessWidget {
     required this.projectId,
     required this.onComplete,
     required this.onNavigateToProject,
+    required this.onOpenTask,
   });
 
   final ProjectWithItems data;
   final int projectId;
   final Future<void> Function(ProjectItemWithDate) onComplete;
   final void Function(int) onNavigateToProject;
+  final void Function(int) onOpenTask;
 
   @override
   Widget build(BuildContext context) {
@@ -123,6 +138,7 @@ class _ProjectDetailContent extends StatelessWidget {
                     itemType: type,
                     onComplete: onComplete,
                     onNavigateToProject: onNavigateToProject,
+                    onOpenTask: onOpenTask,
                   ),
               _AddItemBar(projectId: projectId),
             ],
@@ -177,6 +193,7 @@ class _GroupSection extends StatefulWidget {
     required this.itemType,
     required this.onComplete,
     required this.onNavigateToProject,
+    required this.onOpenTask,
   });
 
   final String label;
@@ -184,6 +201,7 @@ class _GroupSection extends StatefulWidget {
   final String itemType;
   final Future<void> Function(ProjectItemWithDate) onComplete;
   final void Function(int) onNavigateToProject;
+  final void Function(int) onOpenTask;
 
   @override
   State<_GroupSection> createState() => _GroupSectionState();
@@ -191,7 +209,6 @@ class _GroupSection extends StatefulWidget {
 
 class _GroupSectionState extends State<_GroupSection> {
   bool _expanded = true;
-  // Single parent-owned hover key — only one row highlighted at a time.
   int? _hoveredId;
 
   @override
@@ -215,6 +232,9 @@ class _GroupSectionState extends State<_GroupSection> {
               onComplete: () => widget.onComplete(item),
               onNavigate: item.itemType == 'project'
                   ? () => widget.onNavigateToProject(item.item.id)
+                  : null,
+              onOpenTask: item.itemType == 'unscheduled_task'
+                  ? () => widget.onOpenTask(item.item.id)
                   : null,
             ),
       ],
@@ -276,6 +296,7 @@ class _ItemRow extends StatelessWidget {
     required this.onHoverChanged,
     required this.onComplete,
     this.onNavigate,
+    this.onOpenTask,
   });
 
   final ProjectItemWithDate item;
@@ -283,6 +304,7 @@ class _ItemRow extends StatelessWidget {
   final ValueChanged<bool> onHoverChanged;
   final VoidCallback onComplete;
   final VoidCallback? onNavigate;
+  final VoidCallback? onOpenTask;
 
   bool _isEventHappening() {
     final now = DateTime.now();
@@ -382,11 +404,12 @@ class _ItemRow extends StatelessWidget {
     }
 
     return MouseRegion(
+      cursor: SystemMouseCursors.click,
       onEnter: (_) => onHoverChanged(true),
       onExit: (_) => onHoverChanged(false),
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
-        onTap: onNavigate,
+        onTap: onOpenTask ?? onNavigate,
         child: Container(
           color: hovered ? AppColors.hoverBackground : AppColors.background,
           padding: const EdgeInsets.symmetric(

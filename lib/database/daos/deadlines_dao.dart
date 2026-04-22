@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 
 import '../database.dart';
+import '../tables/dependencies.dart';
 import '../tables/item_dates.dart';
 import '../tables/items.dart';
 
@@ -16,7 +17,7 @@ class DeadlineWithDate {
   final ItemDate itemDate;
 }
 
-@DriftAccessor(tables: [Items, ItemDates])
+@DriftAccessor(tables: [Items, ItemDates, TaskDependencies])
 class DeadlinesDao extends DatabaseAccessor<AppDatabase>
     with _$DeadlinesDaoMixin {
   DeadlinesDao(super.db);
@@ -193,5 +194,20 @@ class DeadlinesDao extends DatabaseAccessor<AppDatabase>
         updatedAt: Value(now),
       ),
     );
+  }
+
+  Future<List<Item>> getDeadlinesForTask(int taskId) async {
+    final query = select(items).join([
+      innerJoin(
+        taskDependencies,
+        taskDependencies.dependsOnId.equalsExp(items.id),
+      ),
+    ])
+      ..where(taskDependencies.taskId.equals(taskId))
+      ..where(items.itemType.equals('deadline'))
+      ..where(items.deletedAt.isNull());
+
+    final rows = await query.get();
+    return rows.map((row) => row.readTable(items)).toList();
   }
 }

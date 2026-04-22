@@ -19,6 +19,18 @@ class ProjectItemWithDate {
   final ItemDate? itemDate;
 }
 
+class ProjectMembership {
+  const ProjectMembership({
+    required this.itemId,
+    required this.projectId,
+    required this.projectName,
+  });
+
+  final int itemId;
+  final int projectId;
+  final String projectName;
+}
+
 class ProjectWithItems {
   const ProjectWithItems({
     required this.project,
@@ -133,6 +145,32 @@ class ProjectsDao extends DatabaseAccessor<AppDatabase> with _$ProjectsDaoMixin 
         itemId: itemId,
         itemType: itemType,
       ),
+    );
+  }
+
+  Future<ProjectMembership?> getProjectForItem(int itemId) async {
+    final memberAlias = alias(projectItems, 'membership');
+    final projectAlias = alias(items, 'project');
+
+    final query = select(projectAlias).join([
+      innerJoin(
+        memberAlias,
+        memberAlias.projectId.equalsExp(projectAlias.id),
+      ),
+    ])
+      ..where(memberAlias.itemId.equals(itemId))
+      ..where(projectAlias.deletedAt.isNull());
+
+    final rows = await query.get();
+    if (rows.isEmpty) return null;
+
+    final project = rows.first.readTable(projectAlias);
+    final membership = rows.first.readTable(memberAlias);
+
+    return ProjectMembership(
+      itemId: itemId,
+      projectId: membership.projectId,
+      projectName: project.title,
     );
   }
 
