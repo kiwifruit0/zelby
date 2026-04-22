@@ -114,9 +114,13 @@ class _DateBar extends ConsumerWidget {
     final label =
         '${_kWeekdays[date.weekday - 1]}, ${_kMonths[date.month - 1]} ${date.day}';
 
-    return Container(
-      height: 48,
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.md,
+        AppSpacing.md,
+        AppSpacing.sm,
+        AppSpacing.sm,
+      ),
       child: Row(
         children: [
           Expanded(

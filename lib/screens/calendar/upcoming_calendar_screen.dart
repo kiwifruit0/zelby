@@ -76,9 +76,13 @@ class _UpcomingCalendarScreenState
 
     return Column(
       children: [
-        Container(
-          height: 48,
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.md,
+            AppSpacing.md,
+            AppSpacing.sm,
+            AppSpacing.sm,
+          ),
           child: Row(
             children: [
               Expanded(
