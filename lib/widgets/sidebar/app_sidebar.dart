@@ -17,9 +17,16 @@ class FocusSearchIntent extends Intent {
 }
 
 class AppSidebar extends ConsumerStatefulWidget {
-  const AppSidebar({super.key, required this.onSearchFocus});
+  const AppSidebar({
+    super.key,
+    required this.onSearchFocus,
+    this.onToggle,
+    this.showToggle = true,
+  });
 
   final VoidCallback onSearchFocus;
+  final VoidCallback? onToggle;
+  final bool showToggle;
 
   @override
   ConsumerState<AppSidebar> createState() => _AppSidebarState();
@@ -115,95 +122,104 @@ class _AppSidebarState extends ConsumerState<AppSidebar> {
         child: Focus(
           autofocus: true,
           onKeyEvent: _handleKeyEvent,
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              if (constraints.maxWidth < 100) {
-                return const SizedBox.shrink();
-              }
-              return Container(
-                width: 260,
-                decoration: const BoxDecoration(
-                  color: AppColors.sidebarBackground,
-                  border: Border(right: BorderSide(color: AppColors.divider)),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const _SidebarHeader(),
-                    _AddTaskButton(
-                      hoveredKey: _hoveredKey,
-                      onHoverChanged: _setHoveredKey,
-                      onTap: _addInboxTask,
+          child: OverflowBox(
+            minWidth: 260,
+            maxWidth: 260,
+            alignment: Alignment.topLeft,
+            child: Container(
+              width: 260,
+              decoration: const BoxDecoration(
+                color: AppColors.sidebarBackground,
+                border: Border(right: BorderSide(color: AppColors.divider)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _SidebarHeader(
+                    onToggle: widget.onToggle,
+                    showToggle: widget.showToggle,
+                  ),
+                  _AddTaskButton(
+                    hoveredKey: _hoveredKey,
+                    onHoverChanged: _setHoveredKey,
+                    onTap: _addInboxTask,
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          _NavItemTile(
+                            icon: Icons.search,
+                            label: 'Search',
+                            route: '/search',
+                            isActive: currentPath.startsWith('/search'),
+                            hoveredKey: _hoveredKey,
+                            onHoverChanged: _setHoveredKey,
+                          ),
+                          _NavItemTile(
+                            icon: Icons.inbox_outlined,
+                            label: 'Inbox',
+                            route: '/inbox',
+                            count: countsAsync.value?.inboxCount,
+                            isActive: currentPath.startsWith('/inbox'),
+                            hoveredKey: _hoveredKey,
+                            onHoverChanged: _setHoveredKey,
+                          ),
+                          _NavItemTile(
+                            icon: Icons.today_outlined,
+                            label: 'Today',
+                            route: '/today',
+                            count: countsAsync.value?.todayCount,
+                            isActive: currentPath.startsWith('/today'),
+                            hoveredKey: _hoveredKey,
+                            onHoverChanged: _setHoveredKey,
+                          ),
+                          _NavItemTile(
+                            icon: Icons.calendar_today_outlined,
+                            label: 'Calendar',
+                            route: '/calendar',
+                            isActive: currentPath.startsWith('/calendar'),
+                            hoveredKey: _hoveredKey,
+                            onHoverChanged: _setHoveredKey,
+                          ),
+                          _NavItemTile(
+                            icon: Icons.schedule_outlined,
+                            label: 'Upcoming',
+                            route: '/upcoming',
+                            isActive: currentPath.startsWith('/upcoming'),
+                            hoveredKey: _hoveredKey,
+                            onHoverChanged: _setHoveredKey,
+                          ),
+                          _NavItemTile(
+                            icon: Icons.access_time,
+                            label: 'Events & Deadlines',
+                            route: '/events-deadlines',
+                            count: (countsAsync.value?.eventsCount ?? 0) +
+                                (countsAsync.value?.deadlinesCount ?? 0),
+                            isActive: currentPath.startsWith('/events-deadlines'),
+                            hoveredKey: _hoveredKey,
+                            onHoverChanged: _setHoveredKey,
+                          ),
+                          const SizedBox(height: AppSpacing.lg),
+                          _ProjectsSection(
+                            isExpanded: _projectsExpanded,
+                            isActive: currentPath.startsWith('/projects'),
+                            hoveredKey: _hoveredKey,
+                            onHoverChanged: _setHoveredKey,
+                            onToggle: () =>
+                                setState(() => _projectsExpanded = !_projectsExpanded),
+                            onAddProject: _addProject,
+                            currentPath: currentPath,
+                          ),
+                        ],
+                      ),
                     ),
-                    const SizedBox(height: AppSpacing.sm),
-                    _NavItemTile(
-                      icon: Icons.search,
-                      label: 'Search',
-                      route: '/search',
-                      isActive: currentPath.startsWith('/search'),
-                      hoveredKey: _hoveredKey,
-                      onHoverChanged: _setHoveredKey,
-                    ),
-                    _NavItemTile(
-                      icon: Icons.inbox_outlined,
-                      label: 'Inbox',
-                      route: '/inbox',
-                      count: countsAsync.value?.inboxCount,
-                      isActive: currentPath.startsWith('/inbox'),
-                      hoveredKey: _hoveredKey,
-                      onHoverChanged: _setHoveredKey,
-                    ),
-                    _NavItemTile(
-                      icon: Icons.today_outlined,
-                      label: 'Today',
-                      route: '/today',
-                      count: countsAsync.value?.todayCount,
-                      isActive: currentPath.startsWith('/today'),
-                      hoveredKey: _hoveredKey,
-                      onHoverChanged: _setHoveredKey,
-                    ),
-                    _NavItemTile(
-                      icon: Icons.calendar_today_outlined,
-                      label: 'Calendar',
-                      route: '/calendar',
-                      isActive: currentPath.startsWith('/calendar'),
-                      hoveredKey: _hoveredKey,
-                      onHoverChanged: _setHoveredKey,
-                    ),
-                    _NavItemTile(
-                      icon: Icons.schedule_outlined,
-                      label: 'Upcoming',
-                      route: '/upcoming',
-                      isActive: currentPath.startsWith('/upcoming'),
-                      hoveredKey: _hoveredKey,
-                      onHoverChanged: _setHoveredKey,
-                    ),
-                    _NavItemTile(
-                      icon: Icons.access_time,
-                      label: 'Events & Deadlines',
-                      route: '/events-deadlines',
-                      count: (countsAsync.value?.eventsCount ?? 0) +
-                          (countsAsync.value?.deadlinesCount ?? 0),
-                      isActive: currentPath.startsWith('/events-deadlines'),
-                      hoveredKey: _hoveredKey,
-                      onHoverChanged: _setHoveredKey,
-                    ),
-                    const SizedBox(height: AppSpacing.lg),
-                    _ProjectsSection(
-                      isExpanded: _projectsExpanded,
-                      isActive: currentPath.startsWith('/projects'),
-                      hoveredKey: _hoveredKey,
-                      onHoverChanged: _setHoveredKey,
-                      onToggle: () =>
-                          setState(() => _projectsExpanded = !_projectsExpanded),
-                      onAddProject: _addProject,
-                      currentPath: currentPath,
-                    ),
-                    const Spacer(),
-                  ],
-                ),
-              );
-            },
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
       ),
@@ -217,25 +233,46 @@ class _AppSidebarState extends ConsumerState<AppSidebar> {
 }
 
 class _SidebarHeader extends StatelessWidget {
-  const _SidebarHeader();
+  const _SidebarHeader({this.onToggle, this.showToggle = true});
+
+  final VoidCallback? onToggle;
+  final bool showToggle;
 
   @override
   Widget build(BuildContext context) {
-    return const Padding(
-      padding: EdgeInsets.fromLTRB(
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
         AppSpacing.md,
         AppSpacing.lg,
         AppSpacing.md,
         AppSpacing.md,
       ),
-      child: Text(
-        'ZELBY',
-        style: TextStyle(
-          fontSize: 11,
-          color: AppColors.muted,
-          letterSpacing: 1.8,
-          fontWeight: FontWeight.w600,
-        ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          const Text(
+            'ZELBY',
+            style: TextStyle(
+              fontSize: 11,
+              color: AppColors.muted,
+              letterSpacing: 1.8,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          if (showToggle)
+            IconButton(
+              icon: const Icon(
+                Icons.chevron_left,
+                color: AppColors.muted,
+                size: 20,
+              ),
+              onPressed: onToggle,
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+              splashRadius: 20,
+              tooltip: 'Hide sidebar',
+            ),
+        ],
       ),
     );
   }

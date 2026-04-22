@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -17,6 +18,7 @@ class AppShell extends ConsumerStatefulWidget {
 
 class _AppShellState extends ConsumerState<AppShell> {
   final _searchFocusNode = FocusNode();
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void dispose() {
@@ -27,12 +29,8 @@ class _AppShellState extends ConsumerState<AppShell> {
   int _bottomIndexForPath(String path) {
     if (path.startsWith('/inbox')) return 0;
     if (path.startsWith('/today')) return 1;
-    if (path.startsWith('/calendar')) return 2;
-    if (path.startsWith('/upcoming')) return 3;
-    if (path.startsWith('/events-deadlines')) return 4;
-    if (path.startsWith('/projects')) return 5;
-    if (path.startsWith('/search')) return 6;
-    return 0;
+    if (path.startsWith('/upcoming')) return 2;
+    return 3;
   }
 
   void _onBottomNavTap(int index) {
@@ -42,60 +40,68 @@ class _AppShellState extends ConsumerState<AppShell> {
       case 1:
         context.go('/today');
       case 2:
-        context.go('/calendar');
-      case 3:
         context.go('/upcoming');
-      case 4:
-        context.go('/events-deadlines');
-      case 5:
-        context.go('/projects');
-      case 6:
-        context.go('/search');
+      case 3:
+        _scaffoldKey.currentState?.openDrawer();
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final path = GoRouterState.of(context).uri.path;
-    final isDesktop = MediaQuery.sizeOf(context).width > 600;
+    final layoutState = ref.watch(layoutProvider);
+    final layoutNotifier = ref.read(layoutProvider.notifier);
 
-    if (isDesktop) {
-final layoutState = ref.watch(layoutProvider);
-final layoutNotifier = ref.read(layoutProvider.notifier);
+    final isMobile = !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
+    final isWide = MediaQuery.sizeOf(context).width > 600;
+    final showSidebar = !isMobile && isWide && layoutState.sidebarVisible;
+
+    if (!isMobile) {
       return Scaffold(
+        key: _scaffoldKey,
         backgroundColor: AppColors.background,
+        drawer: isWide
+            ? null
+            : Drawer(
+                child: AppSidebar(
+                  onSearchFocus: () => _searchFocusNode.requestFocus(),
+                  showToggle: false,
+                ),
+              ),
         body: SafeArea(
-          child: Column(
+          child: Stack(
             children: [
-              Padding(
-                padding: const EdgeInsets.only(left: 4, top: 4),
-                child: IconButton(
-                  icon: Icon(
-                    layoutState.sidebarVisible
-                        ? Icons.view_sidebar
-                        : Icons.view_sidebar_outlined,
-                  ),
-                  onPressed: layoutNotifier.toggleSidebar,
-                  tooltip: layoutState.sidebarVisible ? 'Hide sidebar' : 'Show sidebar',
-                ),
-              ),
-              Expanded(
-                child: Row(
-                  children: [
-                    AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      curve: Curves.easeInOut,
-                      width: layoutState.sidebarVisible ? 260.0 : 0.0,
-                      decoration: const BoxDecoration(),
-                      clipBehavior: Clip.hardEdge,
-                      child: layoutState.sidebarVisible
-                          ? AppSidebar(onSearchFocus: () => _searchFocusNode.requestFocus())
-                          : const SizedBox.shrink(),
+              Row(
+                children: [
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    curve: Curves.easeInOut,
+                    width: showSidebar ? 260.0 : 0.0,
+                    decoration: const BoxDecoration(),
+                    clipBehavior: Clip.hardEdge,
+                    child: AppSidebar(
+                      onSearchFocus: () => _searchFocusNode.requestFocus(),
+                      onToggle: layoutNotifier.toggleSidebar,
+                      showToggle: true,
                     ),
-                    Expanded(child: widget.child),
-                  ],
-                ),
+                  ),
+                  Expanded(child: widget.child),
+                ],
               ),
+              if (!showSidebar)
+                Positioned(
+                  left: 4,
+                  top: 4,
+                  child: IconButton(
+                    icon: const Icon(Icons.menu),
+                    color: AppColors.muted,
+                    splashRadius: 20,
+                    onPressed: isWide
+                        ? layoutNotifier.toggleSidebar
+                        : () => _scaffoldKey.currentState?.openDrawer(),
+                    tooltip: 'Show sidebar',
+                  ),
+                ),
             ],
           ),
         ),
@@ -103,8 +109,15 @@ final layoutNotifier = ref.read(layoutProvider.notifier);
     }
 
     return Scaffold(
+      key: _scaffoldKey,
       backgroundColor: AppColors.background,
       body: SafeArea(bottom: false, child: widget.child),
+      drawer: Drawer(
+        child: AppSidebar(
+          onSearchFocus: () => _searchFocusNode.requestFocus(),
+          showToggle: false,
+        ),
+      ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _bottomIndexForPath(path),
         onTap: _onBottomNavTap,
@@ -125,22 +138,13 @@ final layoutNotifier = ref.read(layoutProvider.notifier);
             label: 'Today',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_today_outlined),
-            label: 'Calendar',
-          ),
-          BottomNavigationBarItem(
             icon: Icon(Icons.schedule_outlined),
             label: 'Upcoming',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.access_time),
-            label: 'E & D',
+            icon: Icon(Icons.menu),
+            label: 'Menu',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.folder_outlined),
-            label: 'Projects',
-          ),
-          BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
         ],
       ),
     );
