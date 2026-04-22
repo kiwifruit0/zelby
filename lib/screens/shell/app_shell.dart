@@ -46,6 +46,35 @@ class _AppShellState extends ConsumerState<AppShell> {
     }
   }
 
+  Widget _buildTopBar({required bool showToggle, VoidCallback? onToggle}) {
+    return Container(
+      height: 48,
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          if (showToggle)
+            IconButton(
+              icon: const Icon(Icons.view_sidebar_outlined, size: 20),
+              onPressed: onToggle,
+              color: AppColors.muted,
+              tooltip: 'Show sidebar',
+              splashRadius: 20,
+            )
+          else
+            const SizedBox(width: 48),
+          IconButton(
+            icon: const Icon(Icons.more_horiz, size: 20),
+            onPressed: () {}, // TODO: Implement 3-dot menu
+            color: AppColors.muted,
+            tooltip: 'View options',
+            splashRadius: 20,
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _wrapContent(Widget child, String path) {
     final isFullWidth = path.startsWith('/calendar/daily') ||
         path.startsWith('/calendar/weekly') ||
@@ -87,39 +116,33 @@ class _AppShellState extends ConsumerState<AppShell> {
                 ),
               ),
         body: SafeArea(
-          child: Stack(
+          child: Row(
             children: [
-              Row(
-                children: [
-                  AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    curve: Curves.easeInOut,
-                    width: showSidebar ? 260.0 : 0.0,
-                    decoration: const BoxDecoration(),
-                    clipBehavior: Clip.hardEdge,
-                    child: AppSidebar(
-                      onSearchFocus: () => _searchFocusNode.requestFocus(),
-                      onToggle: layoutNotifier.toggleSidebar,
-                      showToggle: true,
-                    ),
-                  ),
-                  Expanded(child: _wrapContent(widget.child, path)),
-                ],
-              ),
-              if (!showSidebar)
-                Positioned(
-                  left: 4,
-                  top: 4,
-                  child: IconButton(
-                    icon: const Icon(Icons.menu),
-                    color: AppColors.muted,
-                    splashRadius: 20,
-                    onPressed: isWide
-                        ? layoutNotifier.toggleSidebar
-                        : () => _scaffoldKey.currentState?.openDrawer(),
-                    tooltip: 'Show sidebar',
-                  ),
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                curve: Curves.easeInOut,
+                width: showSidebar ? 260.0 : 0.0,
+                decoration: const BoxDecoration(),
+                clipBehavior: Clip.hardEdge,
+                child: AppSidebar(
+                  onSearchFocus: () => _searchFocusNode.requestFocus(),
+                  onToggle: layoutNotifier.toggleSidebar,
+                  showToggle: true,
                 ),
+              ),
+              Expanded(
+                child: Column(
+                  children: [
+                    _buildTopBar(
+                      showToggle: !showSidebar,
+                      onToggle: isWide
+                          ? layoutNotifier.toggleSidebar
+                          : () => _scaffoldKey.currentState?.openDrawer(),
+                    ),
+                    Expanded(child: _wrapContent(widget.child, path)),
+                  ],
+                ),
+              ),
             ],
           ),
         ),
@@ -129,7 +152,15 @@ class _AppShellState extends ConsumerState<AppShell> {
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: AppColors.background,
-      body: SafeArea(bottom: false, child: _wrapContent(widget.child, path)),
+      body: SafeArea(
+        bottom: false,
+        child: Column(
+          children: [
+            _buildTopBar(showToggle: false),
+            Expanded(child: _wrapContent(widget.child, path)),
+          ],
+        ),
+      ),
       drawer: Drawer(
         child: AppSidebar(
           onSearchFocus: () => _searchFocusNode.requestFocus(),
