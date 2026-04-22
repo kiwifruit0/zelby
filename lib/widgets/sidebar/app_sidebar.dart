@@ -115,88 +115,95 @@ class _AppSidebarState extends ConsumerState<AppSidebar> {
         child: Focus(
           autofocus: true,
           onKeyEvent: _handleKeyEvent,
-          child: Container(
-            width: 260,
-            decoration: const BoxDecoration(
-              color: AppColors.sidebarBackground,
-              border: Border(right: BorderSide(color: AppColors.divider)),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const _SidebarHeader(),
-                _AddTaskButton(
-                  hoveredKey: _hoveredKey,
-                  onHoverChanged: _setHoveredKey,
-                  onTap: _addInboxTask,
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              if (constraints.maxWidth < 100) {
+                return const SizedBox.shrink();
+              }
+              return Container(
+                width: 260,
+                decoration: const BoxDecoration(
+                  color: AppColors.sidebarBackground,
+                  border: Border(right: BorderSide(color: AppColors.divider)),
                 ),
-                const SizedBox(height: AppSpacing.sm),
-                _NavItemTile(
-                  icon: Icons.search,
-                  label: 'Search',
-                  route: '/search',
-                  isActive: currentPath.startsWith('/search'),
-                  hoveredKey: _hoveredKey,
-                  onHoverChanged: _setHoveredKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const _SidebarHeader(),
+                    _AddTaskButton(
+                      hoveredKey: _hoveredKey,
+                      onHoverChanged: _setHoveredKey,
+                      onTap: _addInboxTask,
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    _NavItemTile(
+                      icon: Icons.search,
+                      label: 'Search',
+                      route: '/search',
+                      isActive: currentPath.startsWith('/search'),
+                      hoveredKey: _hoveredKey,
+                      onHoverChanged: _setHoveredKey,
+                    ),
+                    _NavItemTile(
+                      icon: Icons.inbox_outlined,
+                      label: 'Inbox',
+                      route: '/inbox',
+                      count: countsAsync.value?.inboxCount,
+                      isActive: currentPath.startsWith('/inbox'),
+                      hoveredKey: _hoveredKey,
+                      onHoverChanged: _setHoveredKey,
+                    ),
+                    _NavItemTile(
+                      icon: Icons.today_outlined,
+                      label: 'Today',
+                      route: '/today',
+                      count: countsAsync.value?.todayCount,
+                      isActive: currentPath.startsWith('/today'),
+                      hoveredKey: _hoveredKey,
+                      onHoverChanged: _setHoveredKey,
+                    ),
+                    _NavItemTile(
+                      icon: Icons.calendar_today_outlined,
+                      label: 'Calendar',
+                      route: '/calendar',
+                      isActive: currentPath.startsWith('/calendar'),
+                      hoveredKey: _hoveredKey,
+                      onHoverChanged: _setHoveredKey,
+                    ),
+                    _NavItemTile(
+                      icon: Icons.schedule_outlined,
+                      label: 'Upcoming',
+                      route: '/upcoming',
+                      isActive: currentPath.startsWith('/upcoming'),
+                      hoveredKey: _hoveredKey,
+                      onHoverChanged: _setHoveredKey,
+                    ),
+                    _NavItemTile(
+                      icon: Icons.access_time,
+                      label: 'Events & Deadlines',
+                      route: '/events-deadlines',
+                      count: (countsAsync.value?.eventsCount ?? 0) +
+                          (countsAsync.value?.deadlinesCount ?? 0),
+                      isActive: currentPath.startsWith('/events-deadlines'),
+                      hoveredKey: _hoveredKey,
+                      onHoverChanged: _setHoveredKey,
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
+                    _ProjectsSection(
+                      isExpanded: _projectsExpanded,
+                      isActive: currentPath.startsWith('/projects'),
+                      hoveredKey: _hoveredKey,
+                      onHoverChanged: _setHoveredKey,
+                      onToggle: () =>
+                          setState(() => _projectsExpanded = !_projectsExpanded),
+                      onAddProject: _addProject,
+                      currentPath: currentPath,
+                    ),
+                    const Spacer(),
+                  ],
                 ),
-                _NavItemTile(
-                  icon: Icons.inbox_outlined,
-                  label: 'Inbox',
-                  route: '/inbox',
-                  count: countsAsync.value?.inboxCount,
-                  isActive: currentPath.startsWith('/inbox'),
-                  hoveredKey: _hoveredKey,
-                  onHoverChanged: _setHoveredKey,
-                ),
-                _NavItemTile(
-                  icon: Icons.today_outlined,
-                  label: 'Today',
-                  route: '/today',
-                  count: countsAsync.value?.todayCount,
-                  isActive: currentPath.startsWith('/today'),
-                  hoveredKey: _hoveredKey,
-                  onHoverChanged: _setHoveredKey,
-                ),
-                _NavItemTile(
-                  icon: Icons.calendar_today_outlined,
-                  label: 'Calendar',
-                  route: '/calendar',
-                  isActive: currentPath.startsWith('/calendar'),
-                  hoveredKey: _hoveredKey,
-                  onHoverChanged: _setHoveredKey,
-                ),
-                _NavItemTile(
-                  icon: Icons.schedule_outlined,
-                  label: 'Upcoming',
-                  route: '/upcoming',
-                  isActive: currentPath.startsWith('/upcoming'),
-                  hoveredKey: _hoveredKey,
-                  onHoverChanged: _setHoveredKey,
-                ),
-                _NavItemTile(
-                  icon: Icons.access_time,
-                  label: 'Events & Deadlines',
-                  route: '/events-deadlines',
-                  count: (countsAsync.value?.eventsCount ?? 0) +
-                      (countsAsync.value?.deadlinesCount ?? 0),
-                  isActive: currentPath.startsWith('/events-deadlines'),
-                  hoveredKey: _hoveredKey,
-                  onHoverChanged: _setHoveredKey,
-                ),
-                const SizedBox(height: AppSpacing.lg),
-                _ProjectsSection(
-                  isExpanded: _projectsExpanded,
-                  isActive: currentPath.startsWith('/projects'),
-                  hoveredKey: _hoveredKey,
-                  onHoverChanged: _setHoveredKey,
-                  onToggle: () =>
-                      setState(() => _projectsExpanded = !_projectsExpanded),
-                  onAddProject: _addProject,
-                  currentPath: currentPath,
-                ),
-                const Spacer(),
-              ],
-            ),
+              );
+            },
           ),
         ),
       ),

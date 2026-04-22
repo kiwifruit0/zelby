@@ -1,19 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../providers/layout_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/sidebar/app_sidebar.dart';
 
-class AppShell extends StatefulWidget {
+class AppShell extends ConsumerStatefulWidget {
   const AppShell({super.key, required this.child});
 
   final Widget child;
 
   @override
-  State<AppShell> createState() => _AppShellState();
+  ConsumerState<AppShell> createState() => _AppShellState();
 }
 
-class _AppShellState extends State<AppShell> {
+class _AppShellState extends ConsumerState<AppShell> {
   final _searchFocusNode = FocusNode();
 
   @override
@@ -58,13 +60,42 @@ class _AppShellState extends State<AppShell> {
     final isDesktop = MediaQuery.sizeOf(context).width > 600;
 
     if (isDesktop) {
+final layoutState = ref.watch(layoutProvider);
+final layoutNotifier = ref.read(layoutProvider.notifier);
       return Scaffold(
         backgroundColor: AppColors.background,
         body: SafeArea(
-          child: Row(
+          child: Column(
             children: [
-              AppSidebar(onSearchFocus: () => _searchFocusNode.requestFocus()),
-              Expanded(child: widget.child),
+              Padding(
+                padding: const EdgeInsets.only(left: 4, top: 4),
+                child: IconButton(
+                  icon: Icon(
+                    layoutState.sidebarVisible
+                        ? Icons.view_sidebar
+                        : Icons.view_sidebar_outlined,
+                  ),
+                  onPressed: layoutNotifier.toggleSidebar,
+                  tooltip: layoutState.sidebarVisible ? 'Hide sidebar' : 'Show sidebar',
+                ),
+              ),
+              Expanded(
+                child: Row(
+                  children: [
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      curve: Curves.easeInOut,
+                      width: layoutState.sidebarVisible ? 260.0 : 0.0,
+                      decoration: const BoxDecoration(),
+                      clipBehavior: Clip.hardEdge,
+                      child: layoutState.sidebarVisible
+                          ? AppSidebar(onSearchFocus: () => _searchFocusNode.requestFocus())
+                          : const SizedBox.shrink(),
+                    ),
+                    Expanded(child: widget.child),
+                  ],
+                ),
+              ),
             ],
           ),
         ),
