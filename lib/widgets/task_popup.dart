@@ -324,7 +324,7 @@ class _AddTaskDialogState extends ConsumerState<_AddTaskDialog> {
                         textInputAction: TextInputAction.done,
                         onSubmitted: (_) => _submit(),
                         decoration: const InputDecoration(
-                          hintText: 'Go to the market Saturday morning',
+                          hintText: 'New task',
                           hintStyle: TextStyle(
                             color: Color(0xFFB0B0B0),
                             fontSize: 34,
@@ -359,44 +359,15 @@ class _AddTaskDialogState extends ConsumerState<_AddTaskDialog> {
                             trailingIconColor: Colors.black54,
                             onTrailingTap: () => setState(() => _selectedDate = null),
                           ),
-                          const _DisabledActionChip(
-                            icon: Icons.flag_outlined,
-                            label: 'Priority',
-                          ),
-                          const _DisabledActionChip(
-                            icon: Icons.notifications_outlined,
-                            label: 'Reminders',
-                          ),
-                          const _DisabledActionChip(
-                            icon: Icons.location_on_outlined,
-                            label: 'Location',
-                          ),
                         ],
                       ),
-                      const SizedBox(height: AppSpacing.sm),
-                      Wrap(
-                        spacing: AppSpacing.sm,
-                        runSpacing: AppSpacing.sm,
-                        children: const [
-                          _DisabledActionChip(
-                            icon: Icons.attach_file,
-                            label: 'Attachment',
-                            showNewBadge: true,
-                          ),
-                          _DisabledActionChip(
-                            icon: Icons.more_horiz,
-                            label: 'More',
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: AppSpacing.lg),
                     ],
                   ),
                 ),
               ),
               const Divider(height: 1, thickness: 1, color: AppColors.divider),
               Padding(
-                padding: const EdgeInsets.all(AppSpacing.lg),
+                padding: const EdgeInsets.all(AppSpacing.md),
                 child: Row(
                   children: [
                     Expanded(
@@ -610,7 +581,7 @@ class _FooterButton extends StatelessWidget {
         behavior: HitTestBehavior.opaque,
         onTap: onTap,
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm + 2),
           decoration: BoxDecoration(
             color: background,
             borderRadius: BorderRadius.circular(10),
