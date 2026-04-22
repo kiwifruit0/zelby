@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../providers/database_provider.dart';
 import '../../providers/today_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/smooth_scroll.dart';
+import '../../widgets/task_popup.dart';
 
 class TodayScreen extends ConsumerStatefulWidget {
   const TodayScreen({super.key});
@@ -84,8 +84,13 @@ class _TodayContentState extends ConsumerState<_TodayContent> {
     }
   }
 
-  Future<void> _insertInboxTask(String title) async {
-    await ref.read(appDatabaseProvider).inboxDao.insertTask(title);
+  Future<void> _openAddTaskDialog(BuildContext context) async {
+    final draft = await showAddTaskDialog(
+      context,
+      initialDate: DateTime.now(),
+    );
+    if (draft == null) return;
+    await persistTaskDraft(ref.read(appDatabaseProvider), draft);
   }
 
   @override
@@ -136,7 +141,7 @@ class _TodayContentState extends ConsumerState<_TodayContent> {
             ),
           ),
         const Divider(height: 1, thickness: 1, color: AppColors.divider),
-        _InlineAddTask(onSubmit: _insertInboxTask),
+        _InlineAddTask(onTap: () => _openAddTaskDialog(context)),
         if (completed.isNotEmpty) ...[
           const SizedBox(height: AppSpacing.lg),
           Text(
@@ -345,123 +350,22 @@ class _MetadataLine extends StatelessWidget {
 }
 
 class _InlineAddTask extends StatefulWidget {
-  const _InlineAddTask({required this.onSubmit});
+  const _InlineAddTask({required this.onTap});
 
-  final Future<void> Function(String title) onSubmit;
+  final Future<void> Function() onTap;
 
   @override
   State<_InlineAddTask> createState() => _InlineAddTaskState();
 }
 
 class _InlineAddTaskState extends State<_InlineAddTask> {
-  bool _expanded = false;
-  bool _hovered = false;
-  final _controller = TextEditingController();
-  final _focusNode = FocusNode();
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    _focusNode.dispose();
-    super.dispose();
-  }
-
-  void _expand() {
-    setState(() => _expanded = true);
-    WidgetsBinding.instance.addPostFrameCallback(
-      (_) => _focusNode.requestFocus(),
-    );
-  }
-
-  Future<void> _submit() async {
-    final title = _controller.text.trim();
-    if (title.isNotEmpty) {
-      await widget.onSubmit(title);
-    }
-    if (!mounted) return;
-    _controller.clear();
-    setState(() => _expanded = false);
-  }
-
-  void _cancel() {
-    _controller.clear();
-    setState(() => _expanded = false);
-  }
-
   @override
   Widget build(BuildContext context) {
-    if (!_expanded) {
-      return MouseRegion(
-        cursor: SystemMouseCursors.click,
-        onEnter: (_) => setState(() => _hovered = true),
-        onExit: (_) => setState(() => _hovered = false),
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: _expand,
-          child: Container(
-            color: _hovered ? AppColors.hoverBackground : Colors.transparent,
-            padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-            child: Row(
-              children: [
-                const Text(
-                  '+',
-                  style: TextStyle(color: Colors.red, fontSize: 16, height: 1),
-                ),
-                const SizedBox(width: AppSpacing.sm),
-                Text(
-                  'Add task',
-                  style: AppTextStyles.bodyMuted.copyWith(
-                    color: AppColors.muted,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      );
-    }
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
-      child: Row(
-        children: [
-          const SizedBox(width: 4),
-          const Icon(Icons.circle_outlined, size: 20, color: AppColors.muted),
-          const SizedBox(width: AppSpacing.sm),
-          Expanded(
-            child: KeyboardListener(
-              focusNode: FocusNode(),
-              onKeyEvent: (event) {
-                if (event is KeyDownEvent &&
-                    event.logicalKey == LogicalKeyboardKey.escape) {
-                  _cancel();
-                }
-              },
-              child: TextField(
-                controller: _controller,
-                focusNode: _focusNode,
-                style: AppTextStyles.itemTitle,
-                decoration: const InputDecoration(
-                  hintText: 'Task name',
-                  hintStyle: AppTextStyles.bodyMuted,
-                  border: InputBorder.none,
-                  isDense: true,
-                  contentPadding: EdgeInsets.zero,
-                ),
-                onSubmitted: (_) => _submit(),
-                textInputAction: TextInputAction.done,
-              ),
-            ),
-          ),
-          GestureDetector(
-            onTap: _submit,
-            child: const Padding(
-              padding: EdgeInsets.all(AppSpacing.xs),
-              child: Icon(Icons.send, size: 16, color: AppColors.muted),
-            ),
-          ),
-        ],
-      ),
+    return TaskAddPromptButton(
+      onTap: widget.onTap,
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+      label: 'Add task',
+      icon: Icons.add,
     );
   }
 }

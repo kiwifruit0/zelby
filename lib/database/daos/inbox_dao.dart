@@ -32,18 +32,38 @@ class InboxDao extends DatabaseAccessor<AppDatabase> with _$InboxDaoMixin {
         .get();
   }
 
-  Future<int> insertTask(String title, {String? notes}) {
+  Future<int> insertTask(
+    String title, {
+    String? notes,
+    DateTime? startDate,
+    DateTime? endDate,
+  }) {
     final now = DateTime.now();
 
-    return into(items).insert(
-      ItemsCompanion.insert(
-        title: title,
-        notes: notes == null ? const Value.absent() : Value(notes),
-        itemType: 'unscheduled_task',
-        createdAt: now,
-        updatedAt: now,
-      ),
-    );
+    return transaction(() async {
+      final itemId = await into(items).insert(
+        ItemsCompanion.insert(
+          title: title,
+          notes: notes == null ? const Value.absent() : Value(notes),
+          itemType: 'unscheduled_task',
+          createdAt: now,
+          updatedAt: now,
+        ),
+      );
+
+      if (startDate != null || endDate != null) {
+        await into(itemDates).insert(
+          ItemDatesCompanion.insert(
+            itemId: Value(itemId),
+            startDate:
+                startDate == null ? const Value.absent() : Value(startDate),
+            endDate: endDate == null ? const Value.absent() : Value(endDate),
+          ),
+        );
+      }
+
+      return itemId;
+    });
   }
 
   Future<int> markComplete(int id) {

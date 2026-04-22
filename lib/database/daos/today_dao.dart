@@ -32,8 +32,9 @@ class TodayDao extends DatabaseAccessor<AppDatabase> with _$TodayDaoMixin {
     final dayStart = DateTime(date.year, date.month, date.day);
     final nextDay = dayStart.add(const Duration(days: 1));
 
-    final scheduledAndDeadlinesToday =
+    final tasksToday =
         (items.itemType.equals('scheduled_task') |
+            items.itemType.equals('unscheduled_task') |
             items.itemType.equals('deadline')) &
         itemDates.endDate.isBiggerOrEqualValue(dayStart) &
         itemDates.endDate.isSmallerThanValue(nextDay);
@@ -49,7 +50,7 @@ class TodayDao extends DatabaseAccessor<AppDatabase> with _$TodayDaoMixin {
           ).join([innerJoin(itemDates, itemDates.itemId.equalsExp(items.id))])
           ..where(items.deletedAt.isNull())
           ..where(items.completed.equals(completed))
-          ..where(scheduledAndDeadlinesToday | eventsToday)
+          ..where(tasksToday | eventsToday)
           ..orderBy([
             OrderingTerm.asc(itemDates.endDate),
             OrderingTerm.asc(itemDates.startDate),

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../database/daos/inbox_dao.dart';
@@ -7,6 +6,7 @@ import '../../providers/database_provider.dart';
 import '../../providers/inbox_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/smooth_scroll.dart';
+import '../../widgets/task_popup.dart';
 
 class InboxScreen extends ConsumerWidget {
   const InboxScreen({super.key});
@@ -62,11 +62,11 @@ class _TaskList extends ConsumerWidget {
           if (index == 0) {
             return const _EmptyState();
           }
-          return _CaptureRow(onSubmit: (title) => _insert(ref, title));
+          return _CaptureRow(onTap: () => _addTask(context, ref));
         }
 
         if (index == tasks.length) {
-          return _CaptureRow(onSubmit: (title) => _insert(ref, title));
+          return _CaptureRow(onTap: () => _addTask(context, ref));
         }
 
         return _TaskRow(
@@ -77,14 +77,18 @@ class _TaskList extends ConsumerWidget {
     );
   }
 
-  Future<void> _insert(WidgetRef ref, String title) async {
-    final db = ref.read(appDatabaseProvider);
-    await InboxDao(db).insertTask(title);
-  }
-
   Future<void> _complete(WidgetRef ref, int id) async {
     final db = ref.read(appDatabaseProvider);
     await InboxDao(db).markComplete(id);
+  }
+
+  Future<void> _addTask(BuildContext context, WidgetRef ref) async {
+    final draft = await showAddTaskDialog(
+      context,
+      initialDate: DateTime.now(),
+    );
+    if (draft == null) return;
+    await persistTaskDraft(ref.read(appDatabaseProvider), draft);
   }
 }
 
@@ -163,154 +167,22 @@ class _TaskRowState extends State<_TaskRow> {
 // ── Capture row ──────────────────────────────────────────────────────────────
 
 class _CaptureRow extends StatefulWidget {
-  const _CaptureRow({required this.onSubmit});
+  const _CaptureRow({required this.onTap});
 
-  final void Function(String title) onSubmit;
+  final Future<void> Function() onTap;
 
   @override
   State<_CaptureRow> createState() => _CaptureRowState();
 }
 
 class _CaptureRowState extends State<_CaptureRow> {
-  bool _expanded = false;
-  bool _addTaskHovered = false;
-  final _controller = TextEditingController();
-  final _focusNode = FocusNode();
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    _focusNode.dispose();
-    super.dispose();
-  }
-
-  void _expand() {
-    setState(() => _expanded = true);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _focusNode.requestFocus();
-    });
-  }
-
-  void _submit() {
-    final title = _controller.text.trim();
-    if (title.isNotEmpty) {
-      widget.onSubmit(title);
-    }
-    _controller.clear();
-    setState(() => _expanded = false);
-  }
-
-  void _cancel() {
-    _controller.clear();
-    setState(() => _expanded = false);
-  }
-
   @override
   Widget build(BuildContext context) {
-    if (!_expanded) {
-      return _AddTaskPrompt(
-        isHovered: _addTaskHovered,
-        onHoverChanged: (hovered) {
-          setState(() => _addTaskHovered = hovered);
-        },
-        onTap: _expand,
-      );
-    }
-
-    return Padding(
+    return TaskAddPromptButton(
+      onTap: widget.onTap,
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.md,
-        vertical: AppSpacing.xs,
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          // Placeholder hollow circle matching task rows
-          Container(
-            width: 18,
-            height: 18,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: AppColors.muted.withValues(alpha: 0.4),
-                width: 1.5,
-              ),
-            ),
-          ),
-          const SizedBox(width: AppSpacing.sm),
-          Expanded(
-            child: KeyboardListener(
-              focusNode: FocusNode(),
-              onKeyEvent: (event) {
-                if (event is KeyDownEvent &&
-                    event.logicalKey == LogicalKeyboardKey.escape) {
-                  _cancel();
-                }
-              },
-              child: TextField(
-                controller: _controller,
-                focusNode: _focusNode,
-                style: AppTextStyles.itemTitle,
-                decoration: const InputDecoration(
-                  hintText: 'Task name',
-                  hintStyle: AppTextStyles.bodyMuted,
-                  border: InputBorder.none,
-                  isDense: true,
-                  contentPadding: EdgeInsets.zero,
-                ),
-                onSubmitted: (_) => _submit(),
-                textInputAction: TextInputAction.done,
-              ),
-            ),
-          ),
-          // Send icon
-          GestureDetector(
-            onTap: _submit,
-            child: const Padding(
-              padding: EdgeInsets.all(AppSpacing.xs),
-              child: Icon(Icons.send, size: 16, color: AppColors.muted),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _AddTaskPrompt extends StatelessWidget {
-  const _AddTaskPrompt({
-    required this.isHovered,
-    required this.onHoverChanged,
-    required this.onTap,
-  });
-
-  final bool isHovered;
-  final ValueChanged<bool> onHoverChanged;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      onEnter: (_) => onHoverChanged(true),
-      onExit: (_) => onHoverChanged(false),
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: onTap,
-        child: Container(
-          color: isHovered ? AppColors.hoverBackground : Colors.transparent,
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.md,
-            vertical: AppSpacing.sm,
-          ),
-          child: Row(
-            children: [
-              const Icon(Icons.add, size: 16, color: AppColors.muted),
-              const SizedBox(width: AppSpacing.sm),
-              Text('Add task', style: AppTextStyles.bodyMuted),
-            ],
-          ),
-        ),
+        vertical: AppSpacing.sm,
       ),
     );
   }

@@ -26,7 +26,10 @@ class ScheduledTasksDao extends DatabaseAccessor<AppDatabase>
         select(
             items,
           ).join([innerJoin(itemDates, itemDates.itemId.equalsExp(items.id))])
-          ..where(items.itemType.equals('scheduled_task'))
+          ..where(
+            items.itemType.equals('scheduled_task') |
+                items.itemType.equals('unscheduled_task'),
+          )
           ..where(items.deletedAt.isNull())
           ..where(items.completed.equals(false))
           ..where(itemDates.endDate.isBiggerOrEqualValue(dayStart))
@@ -53,7 +56,10 @@ class ScheduledTasksDao extends DatabaseAccessor<AppDatabase>
         select(
             items,
           ).join([innerJoin(itemDates, itemDates.itemId.equalsExp(items.id))])
-          ..where(items.itemType.equals('scheduled_task'))
+          ..where(
+            items.itemType.equals('scheduled_task') |
+                items.itemType.equals('unscheduled_task'),
+          )
           ..where(items.deletedAt.isNull())
           ..where(includeCompleted ? const Constant(true) : items.completed.equals(false))
           ..where(itemDates.endDate.isBiggerOrEqualValue(start))

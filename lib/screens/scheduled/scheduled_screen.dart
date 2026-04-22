@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../providers/database_provider.dart';
@@ -7,6 +6,7 @@ import '../../providers/scheduled_tasks_provider.dart';
 import '../../providers/selected_date_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/smooth_scroll.dart';
+import '../../widgets/task_popup.dart';
 
 class ScheduledScreen extends ConsumerWidget {
   const ScheduledScreen({super.key});
@@ -166,14 +166,18 @@ class _TaskListState extends ConsumerState<_TaskList> {
   // Single parent-owned hover key — only one row highlighted at a time.
   int? _hoveredId;
 
-  Future<void> _insert(String title, DateTime date) async {
-    final db = ref.read(appDatabaseProvider);
-    await db.scheduledTasksDao.insertScheduledTask(title, date);
-  }
-
   Future<void> _complete(int id) async {
     final db = ref.read(appDatabaseProvider);
     await db.scheduledTasksDao.markComplete(id);
+  }
+
+  Future<void> _openAddTaskDialog(BuildContext context) async {
+    final draft = await showAddTaskDialog(
+      context,
+      initialDate: widget.selectedDate,
+    );
+    if (draft == null) return;
+    await persistTaskDraft(ref.read(appDatabaseProvider), draft);
   }
 
   @override
@@ -187,17 +191,11 @@ class _TaskListState extends ConsumerState<_TaskList> {
       itemBuilder: (context, index) {
         if (tasks.isEmpty) {
           if (index == 0) return const _EmptyState();
-          return _CaptureRow(
-            initialDate: widget.selectedDate,
-            onSubmit: (title, date) => _insert(title, date),
-          );
+          return _CaptureRow(onTap: () => _openAddTaskDialog(context));
         }
 
         if (index == tasks.length) {
-          return _CaptureRow(
-            initialDate: widget.selectedDate,
-            onSubmit: (title, date) => _insert(title, date),
-          );
+          return _CaptureRow(onTap: () => _openAddTaskDialog(context));
         }
 
         final task = tasks[index];
@@ -303,209 +301,22 @@ class _TaskRow extends StatelessWidget {
 // ── Capture row ──────────────────────────────────────────────────────────────
 
 class _CaptureRow extends StatefulWidget {
-  const _CaptureRow({required this.initialDate, required this.onSubmit});
+  const _CaptureRow({required this.onTap});
 
-  final DateTime initialDate;
-  final void Function(String title, DateTime date) onSubmit;
+  final Future<void> Function() onTap;
 
   @override
   State<_CaptureRow> createState() => _CaptureRowState();
 }
 
 class _CaptureRowState extends State<_CaptureRow> {
-  bool _expanded = false;
-  bool _promptHovered = false;
-  final _controller = TextEditingController();
-  final _focusNode = FocusNode();
-  late DateTime _pickedDate;
-
-  @override
-  void initState() {
-    super.initState();
-    _pickedDate = widget.initialDate;
-  }
-
-  @override
-  void didUpdateWidget(_CaptureRow old) {
-    super.didUpdateWidget(old);
-    // Keep picker in sync if the parent date changes while collapsed.
-    if (!_expanded) _pickedDate = widget.initialDate;
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    _focusNode.dispose();
-    super.dispose();
-  }
-
-  void _expand() {
-    setState(() {
-      _expanded = true;
-      _pickedDate = widget.initialDate;
-    });
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _focusNode.requestFocus();
-    });
-  }
-
-  void _submit() {
-    final title = _controller.text.trim();
-    if (title.isNotEmpty) {
-      widget.onSubmit(title, _pickedDate);
-    }
-    _controller.clear();
-    setState(() => _expanded = false);
-  }
-
-  void _cancel() {
-    _controller.clear();
-    setState(() => _expanded = false);
-  }
-
-  Future<void> _pickDate() async {
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: _pickedDate,
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2100),
-      builder: (context, child) => Theme(
-        data: Theme.of(context).copyWith(
-          colorScheme: Theme.of(context).colorScheme.copyWith(
-            primary: AppColors.accent,
-            onPrimary: AppColors.primary,
-          ),
-        ),
-        child: child!,
-      ),
-    );
-    if (picked != null) setState(() => _pickedDate = picked);
-  }
-
-  String _formatPickedDate(DateTime dt) {
-    return '${dt.month}/${dt.day}/${dt.year.toString().substring(2)}';
-  }
-
   @override
   Widget build(BuildContext context) {
-    if (!_expanded) {
-      return MouseRegion(
-        cursor: SystemMouseCursors.click,
-        onEnter: (_) => setState(() => _promptHovered = true),
-        onExit: (_) => setState(() => _promptHovered = false),
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: _expand,
-          child: Container(
-            color: _promptHovered
-                ? AppColors.hoverBackground
-                : Colors.transparent,
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.md,
-              vertical: AppSpacing.sm,
-            ),
-            child: Row(
-              children: [
-                const Icon(Icons.add, size: 16, color: AppColors.muted),
-                const SizedBox(width: AppSpacing.sm),
-                Text('Add task', style: AppTextStyles.bodyMuted),
-              ],
-            ),
-          ),
-        ),
-      );
-    }
-
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.md,
-        AppSpacing.sm,
-        AppSpacing.md,
-        AppSpacing.xs,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Container(
-                width: 18,
-                height: 18,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: AppColors.muted.withValues(alpha: 0.4),
-                    width: 1.5,
-                  ),
-                ),
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              Expanded(
-                child: KeyboardListener(
-                  focusNode: FocusNode(),
-                  onKeyEvent: (event) {
-                    if (event is KeyDownEvent &&
-                        event.logicalKey == LogicalKeyboardKey.escape) {
-                      _cancel();
-                    }
-                  },
-                  child: TextField(
-                    controller: _controller,
-                    focusNode: _focusNode,
-                    style: AppTextStyles.itemTitle,
-                    decoration: const InputDecoration(
-                      hintText: 'Task name',
-                      hintStyle: AppTextStyles.bodyMuted,
-                      border: InputBorder.none,
-                      isDense: true,
-                      contentPadding: EdgeInsets.zero,
-                    ),
-                    onSubmitted: (_) => _submit(),
-                    textInputAction: TextInputAction.done,
-                  ),
-                ),
-              ),
-              GestureDetector(
-                onTap: _submit,
-                child: const Padding(
-                  padding: EdgeInsets.all(AppSpacing.xs),
-                  child: Icon(Icons.send, size: 16, color: AppColors.muted),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.xs),
-          // Date picker chip
-          GestureDetector(
-            onTap: _pickDate,
-            child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.sm,
-                vertical: 4,
-              ),
-              decoration: BoxDecoration(
-                border: Border.all(color: AppColors.divider),
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(
-                    Icons.calendar_today_outlined,
-                    size: 12,
-                    color: AppColors.muted,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    _formatPickedDate(_pickedDate),
-                    style: AppTextStyles.itemMeta,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
+    return TaskAddPromptButton(
+      onTap: widget.onTap,
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.sm,
       ),
     );
   }

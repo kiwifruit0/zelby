@@ -10,6 +10,7 @@ import '../../providers/projects_provider.dart';
 import '../../providers/database_provider.dart';
 import '../../providers/sidebar_counts_provider.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/task_popup.dart';
 
 class FocusSearchIntent extends Intent {
   const FocusSearchIntent();
@@ -85,8 +86,12 @@ class _AppSidebarState extends ConsumerState<AppSidebar> {
   }
 
   Future<void> _addInboxTask() async {
-    final db = ref.read(appDatabaseProvider);
-    await db.inboxDao.insertTask('New task');
+    final draft = await showAddTaskDialog(
+      context,
+      initialDate: DateTime.now(),
+    );
+    if (draft == null) return;
+    await persistTaskDraft(ref.read(appDatabaseProvider), draft);
   }
 
   @override
@@ -238,7 +243,7 @@ class _AddTaskButton extends StatelessWidget {
 
   final String? hoveredKey;
   final void Function(String, bool) onHoverChanged;
-  final VoidCallback onTap;
+  final Future<void> Function() onTap;
 
   static const _key = '_addTask';
 
@@ -252,7 +257,9 @@ class _AddTaskButton extends StatelessWidget {
       onExit: (_) => onHoverChanged(_key, false),
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
-        onTap: onTap,
+        onTap: () {
+          onTap();
+        },
         child: Container(
           margin: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
           padding: const EdgeInsets.symmetric(

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../providers/database_provider.dart';
@@ -8,6 +7,7 @@ import '../../providers/scheduled_tasks_provider.dart';
 import '../../providers/selected_date_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/smooth_scroll.dart';
+import '../../widgets/task_popup.dart';
 import 'calendar_view_switcher.dart';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -545,8 +545,15 @@ class _SidebarPanelState extends ConsumerState<_SidebarPanel> {
   Future<void> _complete(int id) async =>
       ref.read(appDatabaseProvider).inboxDao.markComplete(id);
 
-  Future<void> _insert(String title) async =>
-      ref.read(appDatabaseProvider).inboxDao.insertTask(title);
+  Future<void> _openAddTaskDialog(BuildContext context) async {
+    final selectedDate = ref.read(selectedDateProvider);
+    final draft = await showAddTaskDialog(
+      context,
+      initialDate: selectedDate,
+    );
+    if (draft == null) return;
+    await persistTaskDraft(ref.read(appDatabaseProvider), draft);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -572,7 +579,7 @@ class _SidebarPanelState extends ConsumerState<_SidebarPanel> {
             itemCount: tasks.length + 1,
             itemBuilder: (context, index) {
               if (index == tasks.length) {
-                return _CaptureBar(onSubmit: _insert);
+                return _CaptureBar(onTap: () => _openAddTaskDialog(context));
               }
               final task = tasks[index];
               return _InboxRow(
@@ -685,130 +692,22 @@ class _InboxRowContent extends StatelessWidget {
 // ── Inline capture bar ────────────────────────────────────────────────────────
 
 class _CaptureBar extends StatefulWidget {
-  const _CaptureBar({required this.onSubmit});
+  const _CaptureBar({required this.onTap});
 
-  final void Function(String title) onSubmit;
+  final Future<void> Function() onTap;
 
   @override
   State<_CaptureBar> createState() => _CaptureBarState();
 }
 
 class _CaptureBarState extends State<_CaptureBar> {
-  bool _expanded = false;
-  bool _promptHovered = false;
-  final _controller = TextEditingController();
-  final _fieldFocusNode = FocusNode();
-  final _keyListenerFocusNode = FocusNode();
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    _fieldFocusNode.dispose();
-    _keyListenerFocusNode.dispose();
-    super.dispose();
-  }
-
-  void _expand() {
-    setState(() => _expanded = true);
-    WidgetsBinding.instance.addPostFrameCallback(
-      (_) => _fieldFocusNode.requestFocus(),
-    );
-  }
-
-  void _submit() {
-    final title = _controller.text.trim();
-    if (title.isNotEmpty) widget.onSubmit(title);
-    _controller.clear();
-    setState(() => _expanded = false);
-  }
-
-  void _cancel() {
-    _controller.clear();
-    setState(() => _expanded = false);
-  }
-
   @override
   Widget build(BuildContext context) {
-    if (!_expanded) {
-      return MouseRegion(
-        cursor: SystemMouseCursors.click,
-        onEnter: (_) => setState(() => _promptHovered = true),
-        onExit: (_) => setState(() => _promptHovered = false),
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: _expand,
-          child: Container(
-            color: _promptHovered
-                ? AppColors.hoverBackground
-                : Colors.transparent,
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.md,
-              vertical: AppSpacing.sm,
-            ),
-            child: Row(
-              children: [
-                const Icon(Icons.add, size: 14, color: AppColors.muted),
-                const SizedBox(width: AppSpacing.xs),
-                Text('Add task', style: AppTextStyles.bodyMuted),
-              ],
-            ),
-          ),
-        ),
-      );
-    }
-
-    return Padding(
+    return TaskAddPromptButton(
+      onTap: widget.onTap,
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.md,
-        vertical: AppSpacing.xs,
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 16,
-            height: 16,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: AppColors.muted.withValues(alpha: 0.4),
-                width: 1.5,
-              ),
-            ),
-          ),
-          const SizedBox(width: AppSpacing.sm),
-          Expanded(
-            child: KeyboardListener(
-              focusNode: _keyListenerFocusNode,
-              onKeyEvent: (event) {
-                if (event is KeyDownEvent &&
-                    event.logicalKey == LogicalKeyboardKey.escape) {
-                  _cancel();
-                }
-              },
-              child: TextField(
-                controller: _controller,
-                focusNode: _fieldFocusNode,
-                style: AppTextStyles.itemTitle,
-                decoration: const InputDecoration(
-                  hintText: 'Task name',
-                  hintStyle: AppTextStyles.bodyMuted,
-                  border: InputBorder.none,
-                  isDense: true,
-                  contentPadding: EdgeInsets.zero,
-                ),
-                onSubmitted: (_) => _submit(),
-                textInputAction: TextInputAction.done,
-              ),
-            ),
-          ),
-          GestureDetector(
-            onTap: _submit,
-            child: const Padding(
-              padding: EdgeInsets.all(AppSpacing.xs),
-              child: Icon(Icons.send, size: 14, color: AppColors.muted),
-            ),
-          ),
-        ],
+        vertical: AppSpacing.sm,
       ),
     );
   }

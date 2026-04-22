@@ -25,7 +25,8 @@ class TodayItem {
   final DateTime? startDate;
   final DateTime? endDate;
 
-  bool get isScheduledTask => item.itemType == 'scheduled_task';
+  bool get isScheduledTask =>
+      item.itemType == 'scheduled_task' || item.itemType == 'unscheduled_task';
   bool get isEvent => item.itemType == 'event';
   bool get isDeadline => item.itemType == 'deadline';
 }
