@@ -45,7 +45,7 @@ class _SearchPopupState extends ConsumerState<SearchPopup> {
   void _onKeyDown(KeyEvent event, List<Object> groupedItems) {
     if (event is! KeyDownEvent) return;
 
-    // Fix (1): Refocus if typing and not focused
+    // Refocus if typing and not focused
     if (!_focusNode.hasFocus && 
         event.character != null && 
         event.logicalKey != LogicalKeyboardKey.escape &&
@@ -206,6 +206,7 @@ class _SearchPopupState extends ConsumerState<SearchPopup> {
                     ),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         _buildSearchInput(query),
                         FilterChipRow(chips: _buildFilterChips(includePast)),
@@ -259,7 +260,10 @@ class _SearchPopupState extends ConsumerState<SearchPopup> {
         id: 'include_past_events',
         label: 'Include past events',
         isSelected: includePast,
-        onTap: () => ref.read(includePastEventsProvider.notifier).toggle(),
+        onTap: () {
+          ref.read(includePastEventsProvider.notifier).toggle();
+          _focusNode.requestFocus();
+        },
       ),
     ];
   }
@@ -297,7 +301,7 @@ class _SearchPopupState extends ConsumerState<SearchPopup> {
               final item = grouped[index];
               if (item is String) {
                 return Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
                   child: Text(item.toUpperCase(), style: const TextStyle(fontSize: 11, color: AppColors.muted, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
                 );
               } else {

@@ -16,7 +16,7 @@ class FilterChipRow extends StatelessWidget {
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.only(left: 16, right: 16, top: 2, bottom: 12),
       child: Row(
         children: chips.map((chip) {
           return Padding(

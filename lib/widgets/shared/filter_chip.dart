@@ -18,6 +18,7 @@ class SearchFilterChipWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTap: onTap,
       child: MouseRegion(
         cursor: SystemMouseCursors.click,
@@ -27,7 +28,7 @@ class SearchFilterChipWidget extends StatelessWidget {
             color: isSelected
                 ? AppColors.accent.withValues(alpha: 0.15)
                 : AppColors.hoverBackground,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(8),
             border: Border.all(
               color: isSelected ? AppColors.accent : Colors.transparent,
               width: 1,

@@ -1,17 +1,32 @@
-# zelby
+# Zelby
 
-A new Flutter project.
+A cross-platform planner app (Linux, Android, web) built with Flutter. Offline-first with Drift SQLite storage.
 
-## Getting Started
+## Tech Stack
 
-This project is a starting point for a Flutter application.
+- Framework: Flutter (Dart)
+- State: Riverpod
+- Database: Drift (SQLite)
+- Navigation: go_router
 
-A few resources to get you started if this is your first Flutter project:
+## Architecture
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+- Widgets → Providers → DAOs → Database
+- No business logic in widgets
+- All queries through Drift DAOs
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Object Types
+
+- Inbox: Unscheduled tasks
+- Scheduled Tasks: Start/end date tasks
+- Events: Date-bounded events (auto-complete)
+- Deadlines: End-date only items
+- Projects: Containers for any object type
+
+## Running and Building
+
+```bash
+flutter run -d linux
+
+flutter build linux
+```
