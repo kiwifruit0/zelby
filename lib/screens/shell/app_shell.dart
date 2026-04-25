@@ -1,11 +1,18 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../providers/layout_provider.dart';
+import '../../providers/search_provider.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/shared/search_popup.dart';
 import '../../widgets/sidebar/app_sidebar.dart';
+
+class DismissSearchIntent extends Intent {
+  const DismissSearchIntent();
+}
 
 class AppShell extends ConsumerStatefulWidget {
   const AppShell({super.key, required this.child});
@@ -17,14 +24,7 @@ class AppShell extends ConsumerStatefulWidget {
 }
 
 class _AppShellState extends ConsumerState<AppShell> {
-  final _searchFocusNode = FocusNode();
   final _scaffoldKey = GlobalKey<ScaffoldState>();
-
-  @override
-  void dispose() {
-    _searchFocusNode.dispose();
-    super.dispose();
-  }
 
   int _bottomIndexForPath(String path) {
     if (path.startsWith('/inbox')) return 0;
@@ -98,20 +98,23 @@ class _AppShellState extends ConsumerState<AppShell> {
     final path = GoRouterState.of(context).uri.path;
     final layoutState = ref.watch(layoutProvider);
     final layoutNotifier = ref.read(layoutProvider.notifier);
+    final searchVisible = ref.watch(searchOverlayVisibleProvider);
 
     final isMobile = !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
     final isWide = MediaQuery.sizeOf(context).width > 600;
     final showSidebar = !isMobile && isWide && layoutState.sidebarVisible;
 
+    Widget scaffold;
+
     if (!isMobile) {
-      return Scaffold(
+      scaffold = Scaffold(
         key: _scaffoldKey,
         backgroundColor: AppColors.background,
         drawer: isWide
             ? null
             : Drawer(
                 child: AppSidebar(
-                  onSearchFocus: () => _searchFocusNode.requestFocus(),
+                  onSearchFocus: () => ref.read(searchOverlayVisibleProvider.notifier).show(),
                   showToggle: false,
                 ),
               ),
@@ -125,7 +128,7 @@ class _AppShellState extends ConsumerState<AppShell> {
                 decoration: const BoxDecoration(),
                 clipBehavior: Clip.hardEdge,
                 child: AppSidebar(
-                  onSearchFocus: () => _searchFocusNode.requestFocus(),
+                  onSearchFocus: () => ref.read(searchOverlayVisibleProvider.notifier).show(),
                   onToggle: layoutNotifier.toggleSidebar,
                   showToggle: true,
                 ),
@@ -147,54 +150,86 @@ class _AppShellState extends ConsumerState<AppShell> {
           ),
         ),
       );
-    }
-
-    return Scaffold(
-      key: _scaffoldKey,
-      backgroundColor: AppColors.background,
-      body: SafeArea(
-        bottom: false,
-        child: Column(
-          children: [
-            _buildTopBar(showToggle: false),
-            Expanded(child: _wrapContent(widget.child, path)),
+    } else {
+      scaffold = Scaffold(
+        key: _scaffoldKey,
+        backgroundColor: AppColors.background,
+        body: SafeArea(
+          bottom: false,
+          child: Column(
+            children: [
+              _buildTopBar(showToggle: false),
+              Expanded(child: _wrapContent(widget.child, path)),
+            ],
+          ),
+        ),
+        drawer: Drawer(
+          child: AppSidebar(
+            onSearchFocus: () => ref.read(searchOverlayVisibleProvider.notifier).show(),
+            showToggle: false,
+          ),
+        ),
+        bottomNavigationBar: BottomNavigationBar(
+          currentIndex: _bottomIndexForPath(path),
+          onTap: _onBottomNavTap,
+          type: BottomNavigationBarType.fixed,
+          selectedItemColor: AppColors.primary,
+          unselectedItemColor: AppColors.muted,
+          backgroundColor: AppColors.sidebarBackground,
+          selectedLabelStyle: AppTextStyles.itemMeta,
+          unselectedLabelStyle: AppTextStyles.itemMeta,
+          elevation: 0,
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.inbox_outlined),
+              label: 'Inbox',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.today_outlined),
+              label: 'Today',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.schedule_outlined),
+              label: 'Upcoming',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.menu),
+              label: 'Menu',
+            ),
           ],
         ),
-      ),
-      drawer: Drawer(
-        child: AppSidebar(
-          onSearchFocus: () => _searchFocusNode.requestFocus(),
-          showToggle: false,
+      );
+    }
+
+    return Shortcuts(
+      shortcuts: {
+        const SingleActivator(LogicalKeyboardKey.slash): const FocusSearchIntent(),
+        const SingleActivator(LogicalKeyboardKey.escape): const DismissSearchIntent(),
+      },
+      child: Actions(
+        actions: {
+          FocusSearchIntent: CallbackAction<FocusSearchIntent>(
+            onInvoke: (_) {
+              ref.read(searchOverlayVisibleProvider.notifier).show();
+              return null;
+            },
+          ),
+          DismissSearchIntent: CallbackAction<DismissSearchIntent>(
+            onInvoke: (_) {
+              if (searchVisible) {
+                ref.read(searchOverlayVisibleProvider.notifier).hide();
+                return null;
+              }
+              return null;
+            },
+          ),
+        },
+        child: Stack(
+          children: [
+            scaffold,
+            if (searchVisible) const SearchPopup(),
+          ],
         ),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _bottomIndexForPath(path),
-        onTap: _onBottomNavTap,
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: AppColors.primary,
-        unselectedItemColor: AppColors.muted,
-        backgroundColor: AppColors.sidebarBackground,
-        selectedLabelStyle: AppTextStyles.itemMeta,
-        unselectedLabelStyle: AppTextStyles.itemMeta,
-        elevation: 0,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.inbox_outlined),
-            label: 'Inbox',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.today_outlined),
-            label: 'Today',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.schedule_outlined),
-            label: 'Upcoming',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.menu),
-            label: 'Menu',
-          ),
-        ],
       ),
     );
   }

@@ -154,9 +154,10 @@ class _AppSidebarState extends ConsumerState<AppSidebar> {
                             icon: Icons.search,
                             label: 'Search',
                             route: '/search',
-                            isActive: currentPath.startsWith('/search'),
+                            isActive: false,
                             hoveredKey: _hoveredKey,
                             onHoverChanged: _setHoveredKey,
+                            onTap: widget.onSearchFocus,
                           ),
                           _NavItemTile(
                             icon: Icons.inbox_outlined,
@@ -347,6 +348,7 @@ class _NavItemTile extends StatelessWidget {
     required this.isActive,
     required this.hoveredKey,
     required this.onHoverChanged,
+    this.onTap,
   });
 
   final IconData icon;
@@ -356,6 +358,7 @@ class _NavItemTile extends StatelessWidget {
   final bool isActive;
   final String? hoveredKey;
   final void Function(String, bool) onHoverChanged;
+  final VoidCallback? onTap;
 
   bool get _isHovered => hoveredKey == route;
 
@@ -375,7 +378,7 @@ class _NavItemTile extends StatelessWidget {
       onExit: (_) => onHoverChanged(route, false),
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
-        onTap: () => context.go(route),
+        onTap: onTap ?? () => context.go(route),
         child: Container(
           margin: const EdgeInsets.symmetric(
             horizontal: AppSpacing.md,

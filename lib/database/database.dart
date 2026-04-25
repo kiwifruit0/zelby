@@ -6,6 +6,7 @@ import 'daos/events_dao.dart';
 import 'daos/inbox_dao.dart';
 import 'daos/projects_dao.dart';
 import 'daos/scheduled_tasks_dao.dart';
+import 'daos/search_dao.dart';
 import 'daos/today_dao.dart';
 import 'tables/dependencies.dart';
 import 'tables/item_dates.dart';
@@ -23,6 +24,7 @@ part 'database.g.dart';
     DeadlinesDao,
     ProjectsDao,
     TodayDao,
+    SearchDao,
   ],
 )
 class AppDatabase extends _$AppDatabase {
