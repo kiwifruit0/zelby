@@ -1355,6 +1355,503 @@ class TaskDependenciesCompanion extends UpdateCompanion<TaskDependency> {
   }
 }
 
+class $RecentItemsTable extends RecentItems
+    with TableInfo<$RecentItemsTable, RecentItem> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $RecentItemsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _typeMeta = const VerificationMeta('type');
+  @override
+  late final GeneratedColumn<String> type = GeneratedColumn<String>(
+    'type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _itemIdMeta = const VerificationMeta('itemId');
+  @override
+  late final GeneratedColumn<int> itemId = GeneratedColumn<int>(
+    'item_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _routeMeta = const VerificationMeta('route');
+  @override
+  late final GeneratedColumn<String> route = GeneratedColumn<String>(
+    'route',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _titleMeta = const VerificationMeta('title');
+  @override
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
+    'title',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _subtitleMeta = const VerificationMeta(
+    'subtitle',
+  );
+  @override
+  late final GeneratedColumn<String> subtitle = GeneratedColumn<String>(
+    'subtitle',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _iconKindMeta = const VerificationMeta(
+    'iconKind',
+  );
+  @override
+  late final GeneratedColumn<String> iconKind = GeneratedColumn<String>(
+    'icon_kind',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    type,
+    itemId,
+    route,
+    title,
+    subtitle,
+    iconKind,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'recent_items';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<RecentItem> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('type')) {
+      context.handle(
+        _typeMeta,
+        type.isAcceptableOrUnknown(data['type']!, _typeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_typeMeta);
+    }
+    if (data.containsKey('item_id')) {
+      context.handle(
+        _itemIdMeta,
+        itemId.isAcceptableOrUnknown(data['item_id']!, _itemIdMeta),
+      );
+    }
+    if (data.containsKey('route')) {
+      context.handle(
+        _routeMeta,
+        route.isAcceptableOrUnknown(data['route']!, _routeMeta),
+      );
+    }
+    if (data.containsKey('title')) {
+      context.handle(
+        _titleMeta,
+        title.isAcceptableOrUnknown(data['title']!, _titleMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_titleMeta);
+    }
+    if (data.containsKey('subtitle')) {
+      context.handle(
+        _subtitleMeta,
+        subtitle.isAcceptableOrUnknown(data['subtitle']!, _subtitleMeta),
+      );
+    }
+    if (data.containsKey('icon_kind')) {
+      context.handle(
+        _iconKindMeta,
+        iconKind.isAcceptableOrUnknown(data['icon_kind']!, _iconKindMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_iconKindMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  RecentItem map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return RecentItem(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      type: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}type'],
+      )!,
+      itemId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}item_id'],
+      ),
+      route: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}route'],
+      ),
+      title: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}title'],
+      )!,
+      subtitle: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}subtitle'],
+      ),
+      iconKind: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}icon_kind'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $RecentItemsTable createAlias(String alias) {
+    return $RecentItemsTable(attachedDatabase, alias);
+  }
+}
+
+class RecentItem extends DataClass implements Insertable<RecentItem> {
+  final int id;
+  final String type;
+  final int? itemId;
+  final String? route;
+  final String title;
+  final String? subtitle;
+  final String iconKind;
+  final DateTime updatedAt;
+  const RecentItem({
+    required this.id,
+    required this.type,
+    this.itemId,
+    this.route,
+    required this.title,
+    this.subtitle,
+    required this.iconKind,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['type'] = Variable<String>(type);
+    if (!nullToAbsent || itemId != null) {
+      map['item_id'] = Variable<int>(itemId);
+    }
+    if (!nullToAbsent || route != null) {
+      map['route'] = Variable<String>(route);
+    }
+    map['title'] = Variable<String>(title);
+    if (!nullToAbsent || subtitle != null) {
+      map['subtitle'] = Variable<String>(subtitle);
+    }
+    map['icon_kind'] = Variable<String>(iconKind);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  RecentItemsCompanion toCompanion(bool nullToAbsent) {
+    return RecentItemsCompanion(
+      id: Value(id),
+      type: Value(type),
+      itemId: itemId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(itemId),
+      route: route == null && nullToAbsent
+          ? const Value.absent()
+          : Value(route),
+      title: Value(title),
+      subtitle: subtitle == null && nullToAbsent
+          ? const Value.absent()
+          : Value(subtitle),
+      iconKind: Value(iconKind),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory RecentItem.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return RecentItem(
+      id: serializer.fromJson<int>(json['id']),
+      type: serializer.fromJson<String>(json['type']),
+      itemId: serializer.fromJson<int?>(json['itemId']),
+      route: serializer.fromJson<String?>(json['route']),
+      title: serializer.fromJson<String>(json['title']),
+      subtitle: serializer.fromJson<String?>(json['subtitle']),
+      iconKind: serializer.fromJson<String>(json['iconKind']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'type': serializer.toJson<String>(type),
+      'itemId': serializer.toJson<int?>(itemId),
+      'route': serializer.toJson<String?>(route),
+      'title': serializer.toJson<String>(title),
+      'subtitle': serializer.toJson<String?>(subtitle),
+      'iconKind': serializer.toJson<String>(iconKind),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  RecentItem copyWith({
+    int? id,
+    String? type,
+    Value<int?> itemId = const Value.absent(),
+    Value<String?> route = const Value.absent(),
+    String? title,
+    Value<String?> subtitle = const Value.absent(),
+    String? iconKind,
+    DateTime? updatedAt,
+  }) => RecentItem(
+    id: id ?? this.id,
+    type: type ?? this.type,
+    itemId: itemId.present ? itemId.value : this.itemId,
+    route: route.present ? route.value : this.route,
+    title: title ?? this.title,
+    subtitle: subtitle.present ? subtitle.value : this.subtitle,
+    iconKind: iconKind ?? this.iconKind,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  RecentItem copyWithCompanion(RecentItemsCompanion data) {
+    return RecentItem(
+      id: data.id.present ? data.id.value : this.id,
+      type: data.type.present ? data.type.value : this.type,
+      itemId: data.itemId.present ? data.itemId.value : this.itemId,
+      route: data.route.present ? data.route.value : this.route,
+      title: data.title.present ? data.title.value : this.title,
+      subtitle: data.subtitle.present ? data.subtitle.value : this.subtitle,
+      iconKind: data.iconKind.present ? data.iconKind.value : this.iconKind,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('RecentItem(')
+          ..write('id: $id, ')
+          ..write('type: $type, ')
+          ..write('itemId: $itemId, ')
+          ..write('route: $route, ')
+          ..write('title: $title, ')
+          ..write('subtitle: $subtitle, ')
+          ..write('iconKind: $iconKind, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    type,
+    itemId,
+    route,
+    title,
+    subtitle,
+    iconKind,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is RecentItem &&
+          other.id == this.id &&
+          other.type == this.type &&
+          other.itemId == this.itemId &&
+          other.route == this.route &&
+          other.title == this.title &&
+          other.subtitle == this.subtitle &&
+          other.iconKind == this.iconKind &&
+          other.updatedAt == this.updatedAt);
+}
+
+class RecentItemsCompanion extends UpdateCompanion<RecentItem> {
+  final Value<int> id;
+  final Value<String> type;
+  final Value<int?> itemId;
+  final Value<String?> route;
+  final Value<String> title;
+  final Value<String?> subtitle;
+  final Value<String> iconKind;
+  final Value<DateTime> updatedAt;
+  const RecentItemsCompanion({
+    this.id = const Value.absent(),
+    this.type = const Value.absent(),
+    this.itemId = const Value.absent(),
+    this.route = const Value.absent(),
+    this.title = const Value.absent(),
+    this.subtitle = const Value.absent(),
+    this.iconKind = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  });
+  RecentItemsCompanion.insert({
+    this.id = const Value.absent(),
+    required String type,
+    this.itemId = const Value.absent(),
+    this.route = const Value.absent(),
+    required String title,
+    this.subtitle = const Value.absent(),
+    required String iconKind,
+    required DateTime updatedAt,
+  }) : type = Value(type),
+       title = Value(title),
+       iconKind = Value(iconKind),
+       updatedAt = Value(updatedAt);
+  static Insertable<RecentItem> custom({
+    Expression<int>? id,
+    Expression<String>? type,
+    Expression<int>? itemId,
+    Expression<String>? route,
+    Expression<String>? title,
+    Expression<String>? subtitle,
+    Expression<String>? iconKind,
+    Expression<DateTime>? updatedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (type != null) 'type': type,
+      if (itemId != null) 'item_id': itemId,
+      if (route != null) 'route': route,
+      if (title != null) 'title': title,
+      if (subtitle != null) 'subtitle': subtitle,
+      if (iconKind != null) 'icon_kind': iconKind,
+      if (updatedAt != null) 'updated_at': updatedAt,
+    });
+  }
+
+  RecentItemsCompanion copyWith({
+    Value<int>? id,
+    Value<String>? type,
+    Value<int?>? itemId,
+    Value<String?>? route,
+    Value<String>? title,
+    Value<String?>? subtitle,
+    Value<String>? iconKind,
+    Value<DateTime>? updatedAt,
+  }) {
+    return RecentItemsCompanion(
+      id: id ?? this.id,
+      type: type ?? this.type,
+      itemId: itemId ?? this.itemId,
+      route: route ?? this.route,
+      title: title ?? this.title,
+      subtitle: subtitle ?? this.subtitle,
+      iconKind: iconKind ?? this.iconKind,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (type.present) {
+      map['type'] = Variable<String>(type.value);
+    }
+    if (itemId.present) {
+      map['item_id'] = Variable<int>(itemId.value);
+    }
+    if (route.present) {
+      map['route'] = Variable<String>(route.value);
+    }
+    if (title.present) {
+      map['title'] = Variable<String>(title.value);
+    }
+    if (subtitle.present) {
+      map['subtitle'] = Variable<String>(subtitle.value);
+    }
+    if (iconKind.present) {
+      map['icon_kind'] = Variable<String>(iconKind.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('RecentItemsCompanion(')
+          ..write('id: $id, ')
+          ..write('type: $type, ')
+          ..write('itemId: $itemId, ')
+          ..write('route: $route, ')
+          ..write('title: $title, ')
+          ..write('subtitle: $subtitle, ')
+          ..write('iconKind: $iconKind, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -1364,6 +1861,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $TaskDependenciesTable taskDependencies = $TaskDependenciesTable(
     this,
   );
+  late final $RecentItemsTable recentItems = $RecentItemsTable(this);
   late final InboxDao inboxDao = InboxDao(this as AppDatabase);
   late final ScheduledTasksDao scheduledTasksDao = ScheduledTasksDao(
     this as AppDatabase,
@@ -1373,6 +1871,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final ProjectsDao projectsDao = ProjectsDao(this as AppDatabase);
   late final TodayDao todayDao = TodayDao(this as AppDatabase);
   late final SearchDao searchDao = SearchDao(this as AppDatabase);
+  late final RecentItemsDao recentItemsDao = RecentItemsDao(
+    this as AppDatabase,
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -1382,6 +1883,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     itemDates,
     projectItems,
     taskDependencies,
+    recentItems,
   ];
 }
 
@@ -2767,6 +3269,257 @@ typedef $$TaskDependenciesTableProcessedTableManager =
       TaskDependency,
       PrefetchHooks Function({bool taskId, bool dependsOnId})
     >;
+typedef $$RecentItemsTableCreateCompanionBuilder =
+    RecentItemsCompanion Function({
+      Value<int> id,
+      required String type,
+      Value<int?> itemId,
+      Value<String?> route,
+      required String title,
+      Value<String?> subtitle,
+      required String iconKind,
+      required DateTime updatedAt,
+    });
+typedef $$RecentItemsTableUpdateCompanionBuilder =
+    RecentItemsCompanion Function({
+      Value<int> id,
+      Value<String> type,
+      Value<int?> itemId,
+      Value<String?> route,
+      Value<String> title,
+      Value<String?> subtitle,
+      Value<String> iconKind,
+      Value<DateTime> updatedAt,
+    });
+
+class $$RecentItemsTableFilterComposer
+    extends Composer<_$AppDatabase, $RecentItemsTable> {
+  $$RecentItemsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get type => $composableBuilder(
+    column: $table.type,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get itemId => $composableBuilder(
+    column: $table.itemId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get route => $composableBuilder(
+    column: $table.route,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get subtitle => $composableBuilder(
+    column: $table.subtitle,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get iconKind => $composableBuilder(
+    column: $table.iconKind,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$RecentItemsTableOrderingComposer
+    extends Composer<_$AppDatabase, $RecentItemsTable> {
+  $$RecentItemsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get type => $composableBuilder(
+    column: $table.type,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get itemId => $composableBuilder(
+    column: $table.itemId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get route => $composableBuilder(
+    column: $table.route,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get subtitle => $composableBuilder(
+    column: $table.subtitle,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get iconKind => $composableBuilder(
+    column: $table.iconKind,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$RecentItemsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $RecentItemsTable> {
+  $$RecentItemsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get type =>
+      $composableBuilder(column: $table.type, builder: (column) => column);
+
+  GeneratedColumn<int> get itemId =>
+      $composableBuilder(column: $table.itemId, builder: (column) => column);
+
+  GeneratedColumn<String> get route =>
+      $composableBuilder(column: $table.route, builder: (column) => column);
+
+  GeneratedColumn<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => column);
+
+  GeneratedColumn<String> get subtitle =>
+      $composableBuilder(column: $table.subtitle, builder: (column) => column);
+
+  GeneratedColumn<String> get iconKind =>
+      $composableBuilder(column: $table.iconKind, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$RecentItemsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $RecentItemsTable,
+          RecentItem,
+          $$RecentItemsTableFilterComposer,
+          $$RecentItemsTableOrderingComposer,
+          $$RecentItemsTableAnnotationComposer,
+          $$RecentItemsTableCreateCompanionBuilder,
+          $$RecentItemsTableUpdateCompanionBuilder,
+          (
+            RecentItem,
+            BaseReferences<_$AppDatabase, $RecentItemsTable, RecentItem>,
+          ),
+          RecentItem,
+          PrefetchHooks Function()
+        > {
+  $$RecentItemsTableTableManager(_$AppDatabase db, $RecentItemsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$RecentItemsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$RecentItemsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$RecentItemsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> type = const Value.absent(),
+                Value<int?> itemId = const Value.absent(),
+                Value<String?> route = const Value.absent(),
+                Value<String> title = const Value.absent(),
+                Value<String?> subtitle = const Value.absent(),
+                Value<String> iconKind = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+              }) => RecentItemsCompanion(
+                id: id,
+                type: type,
+                itemId: itemId,
+                route: route,
+                title: title,
+                subtitle: subtitle,
+                iconKind: iconKind,
+                updatedAt: updatedAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String type,
+                Value<int?> itemId = const Value.absent(),
+                Value<String?> route = const Value.absent(),
+                required String title,
+                Value<String?> subtitle = const Value.absent(),
+                required String iconKind,
+                required DateTime updatedAt,
+              }) => RecentItemsCompanion.insert(
+                id: id,
+                type: type,
+                itemId: itemId,
+                route: route,
+                title: title,
+                subtitle: subtitle,
+                iconKind: iconKind,
+                updatedAt: updatedAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$RecentItemsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $RecentItemsTable,
+      RecentItem,
+      $$RecentItemsTableFilterComposer,
+      $$RecentItemsTableOrderingComposer,
+      $$RecentItemsTableAnnotationComposer,
+      $$RecentItemsTableCreateCompanionBuilder,
+      $$RecentItemsTableUpdateCompanionBuilder,
+      (
+        RecentItem,
+        BaseReferences<_$AppDatabase, $RecentItemsTable, RecentItem>,
+      ),
+      RecentItem,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -2779,4 +3532,6 @@ class $AppDatabaseManager {
       $$ProjectItemsTableTableManager(_db, _db.projectItems);
   $$TaskDependenciesTableTableManager get taskDependencies =>
       $$TaskDependenciesTableTableManager(_db, _db.taskDependencies);
+  $$RecentItemsTableTableManager get recentItems =>
+      $$RecentItemsTableTableManager(_db, _db.recentItems);
 }

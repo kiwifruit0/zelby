@@ -5,6 +5,7 @@ import 'daos/deadlines_dao.dart';
 import 'daos/events_dao.dart';
 import 'daos/inbox_dao.dart';
 import 'daos/projects_dao.dart';
+import 'daos/recent_items_dao.dart';
 import 'daos/scheduled_tasks_dao.dart';
 import 'daos/search_dao.dart';
 import 'daos/today_dao.dart';
@@ -12,11 +13,12 @@ import 'tables/dependencies.dart';
 import 'tables/item_dates.dart';
 import 'tables/items.dart';
 import 'tables/projects.dart';
+import 'tables/recent_items.dart';
 
 part 'database.g.dart';
 
 @DriftDatabase(
-  tables: [Items, ItemDates, ProjectItems, TaskDependencies],
+  tables: [Items, ItemDates, ProjectItems, TaskDependencies, RecentItems],
   daos: [
     InboxDao,
     ScheduledTasksDao,
@@ -25,6 +27,7 @@ part 'database.g.dart';
     ProjectsDao,
     TodayDao,
     SearchDao,
+    RecentItemsDao,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -35,12 +38,17 @@ class AppDatabase extends _$AppDatabase {
   factory AppDatabase() => instance;
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
     onCreate: (Migrator m) async {
       await m.createAll();
+    },
+    onUpgrade: (Migrator m, int from, int to) async {
+      if (from < 2) {
+        await m.createTable(recentItems);
+      }
     },
   );
 }

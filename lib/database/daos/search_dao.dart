@@ -22,7 +22,7 @@ class SearchResultRow {
 class SearchDao extends DatabaseAccessor<AppDatabase> with _$SearchDaoMixin {
   SearchDao(super.db);
 
-  Future<List<SearchResultRow>> searchItems(String query) async {
+  Future<List<SearchResultRow>> searchItems(String query, {bool includePastEvents = false}) async {
     if (query.isEmpty) return [];
 
     final projectAlias = alias(items, 'project_title_alias');
@@ -34,6 +34,17 @@ class SearchDao extends DatabaseAccessor<AppDatabase> with _$SearchDaoMixin {
     ])
       ..where(items.deletedAt.isNull())
       ..where(items.title.contains(query) | items.notes.contains(query));
+
+    if (!includePastEvents) {
+      // Exclude past events: Only filter items of type 'event' that have an end date in the past
+      // This means we KEEP: non-events, events with no date, events with future end date
+      final now = DateTime.now();
+      dbQuery.where(
+        items.itemType.equals('event').not() | 
+        itemDates.endDate.isNull() | 
+        itemDates.endDate.isBiggerOrEqualValue(now)
+      );
+    }
 
     final rows = await dbQuery.get();
 
