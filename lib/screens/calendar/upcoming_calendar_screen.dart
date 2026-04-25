@@ -5,7 +5,6 @@ import '../../providers/database_provider.dart';
 import '../../providers/schedule_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/smooth_scroll.dart';
-import 'calendar_view_switcher.dart';
 
 class UpcomingCalendarScreen extends ConsumerStatefulWidget {
   const UpcomingCalendarScreen({super.key});
@@ -98,7 +97,6 @@ class _UpcomingCalendarScreenState
                   ),
                 ),
               ),
-              const CalendarViewSwitcher(currentView: CalendarView.schedule),
             ],
           ),
         ),
